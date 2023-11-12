@@ -9,7 +9,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://app.clickup.com/t/*"
+        "https://app.clickup.com/*"
       ],
       "js": [
         "src/content-script.tsx"
