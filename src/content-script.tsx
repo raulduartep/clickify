@@ -1,20 +1,40 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
-import { StartTimeButton } from "./components/StartTimeButton";
 import { URLHelper } from "./helpers/URLHelper";
+import { TimeButton } from "./components/TimeButton";
 
-console.log("CLickup-Clockify-Integration content script loaded");
+console.info("ClickClock Extension Info: content script loaded");
 
-const createRoot = () => {
+const waitForElement = async (selector: string) => {
+  return new Promise<Element>((resolve) => {
+    const element = document.querySelector(selector);
+    if (element) {
+      return resolve(element);
+    }
+
+    const observer = new MutationObserver(() => {
+      const mutationElement = document.querySelector(selector);
+      if (mutationElement) {
+        resolve(mutationElement);
+        observer.disconnect();
+        return;
+      }
+    });
+
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+    });
+  });
+};
+
+const createRoot = async () => {
+  const element = await waitForElement(".cu-task-header__section_rightside ");
+
   const root = document.createElement("div");
-  root.id = "crx-root";
-  document.body.appendChild(root);
+  root.id = "click-clock-extension-root";
+  element.insertBefore(root, element.childNodes[0]);
 
-  ReactDOM.createRoot(root).render(
-    <React.StrictMode>
-      <StartTimeButton />
-    </React.StrictMode>
-  );
+  ReactDOM.createRoot(root).render(<TimeButton />);
 };
 
 const deleteRoot = () => {
@@ -26,18 +46,6 @@ const deleteRoot = () => {
 
 const init = async () => {
   let url = document.location.href;
-
-  document.onreadystatechange = () => {
-    console.log(document.readyState);
-  };
-
-  window.onload = () => {
-    console.log("window loaded");
-  };
-
-  window.onunload = () => {
-    console.log("window unloaded");
-  };
 
   if (URLHelper.isClickupTaskUrl(url)) {
     createRoot();

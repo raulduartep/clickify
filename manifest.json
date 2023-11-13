@@ -1,10 +1,17 @@
 {
-  "name": "ClickClock - Chrome Extension",
+  "name": "ClickClock Extension",
+  "description": "Log hours on Clockify at the same time you change status on ClickUp on a Chrome Extension",
   "version": "1.0",
   "manifest_version": 3,
   "action": {
     "default_popup": "index.html",
     "default_title": "Open the popup"
+  },
+  "icons": {
+    "16": "src/assets/icons/icon-16x16.png",
+    "32": "src/assets/icons/icon-32x32.png",
+    "48": "src/assets/icons/icon-48x48.png",
+    "128": "src/assets/icons/icon-128x128.png"
   },
   "content_scripts": [
     {
@@ -15,5 +22,8 @@
         "src/content-script.tsx"
       ]
     }
+  ],
+  "permissions": [
+    "storage"
   ]
 }
