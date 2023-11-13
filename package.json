@@ -1,8 +1,9 @@
 {
-  "name": "click-clock-extension",
+  "name": "clickclock-extension",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "author": "Raul Duarte Pereira (https://github.com/raulduartep)",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
