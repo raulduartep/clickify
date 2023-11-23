@@ -20,12 +20,18 @@ export type TGetProjectResponse = {
   name: string;
 };
 
+export type TGetTagResponse = {
+  id: string;
+  name: string;
+};
+
 type TCreateNewTimeEntryParams = {
   body: {
     billable: boolean;
     description: string;
     start: string;
     projectId?: string;
+    tagIds?: string[];
   };
   config: {
     apiKey: string;
@@ -51,6 +57,11 @@ type TGetLastTimeEntryParams = {
 };
 
 type TGetAllProjectsParams = {
+  apiKey: string;
+  workspaceId: string;
+};
+
+type TGetAllTagsParams = {
   apiKey: string;
   workspaceId: string;
 };
@@ -162,7 +173,7 @@ export const getAllProjects = async ({
   workspaceId,
 }: TGetAllProjectsParams) => {
   const response = await fetch(
-    `  https://api.clockify.me/api/v1/workspaces/${workspaceId}/projects`,
+    `https://api.clockify.me/api/v1/workspaces/${workspaceId}/projects`,
     {
       method: "GET",
       headers: {
@@ -178,6 +189,32 @@ export const getAllProjects = async ({
 
   const data = (await response.json()) as any[];
   return data.map<TGetProjectResponse>((item) => ({
+    id: item.id,
+    name: item.name,
+  }));
+};
+
+export const getAllTags = async ({
+  apiKey,
+  workspaceId,
+}: TGetAllTagsParams) => {
+  const response = await fetch(
+    `https://api.clockify.me/api/v1/workspaces/${workspaceId}/tags?archived=false`,
+    {
+      method: "GET",
+      headers: {
+        "X-Api-Key": apiKey,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Error getting all tags");
+  }
+
+  const data = (await response.json()) as any[];
+  return data.map<TGetTagResponse>((item) => ({
     id: item.id,
     name: item.name,
   }));

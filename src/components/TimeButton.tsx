@@ -1,9 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { IconClockPlay, IconClockStop } from "@tabler/icons-react";
+import {
+  IconChevronDown,
+  IconClockPlay,
+  IconClockStop,
+} from "@tabler/icons-react";
+import * as RadixPopover from "@radix-ui/react-popover";
 
 import {
+  TGetTagResponse,
   TGetUserResponse,
   TTimeEntryResponse,
   createNewTimeEntry,
@@ -18,12 +24,18 @@ dayjs.extend(utc);
 
 export const TimeButton = () => {
   const [isRunning, setIsRunning] = useState(false);
-  const [isStarted, setIsStarted] = useState(false);
+  const [isStarted, setIsStarted] = useState(true);
+
+  const [allTags, setAllTags] = useState<TGetTagResponse[]>([]);
+
+  const [isOpen, setIsOpen] = useState(false);
 
   const runningEntryRef = useRef<TTimeEntryResponse>();
   const storageApiKeyRef = useRef<string>();
   const storageUserRef = useRef<TGetUserResponse>();
   const storageProjectsRef = useRef<TClockifyProjectWithClickupList[]>();
+
+  const selectIsDisabled = !isStarted || isRunning || !allTags;
 
   const generateTimeEntryDescription = useCallback(() => {
     const taskNameElement = document.querySelector("#task-name");
@@ -56,8 +68,10 @@ export const TimeButton = () => {
     return foundProject;
   };
 
-  async function handlePlay() {
+  async function handlePlay(tag?: TGetTagResponse) {
     try {
+      setIsOpen(false);
+
       if (!storageApiKeyRef.current || !storageUserRef.current) {
         throw new Error(
           "API Key or User not found. You need to open the extension popup and set your API Key."
@@ -73,6 +87,7 @@ export const TimeButton = () => {
           description,
           start,
           projectId: project?.id,
+          tagIds: tag ? [tag.id] : [],
         },
         config: {
           apiKey: storageApiKeyRef.current,
@@ -119,22 +134,31 @@ export const TimeButton = () => {
   }
 
   const init = useCallback(async () => {
-    const { apiKey, user, projects } = await chrome.storage.local.get([
+    const { apiKey, user, projects, tags } = await chrome.storage.local.get([
       "apiKey",
       "user",
       "projects",
+      "tags",
     ]);
 
-    if (apiKey === undefined || user === undefined || projects === undefined) {
+    if (
+      apiKey === undefined ||
+      user === undefined ||
+      projects === undefined ||
+      tags === undefined
+    ) {
       console.error(
         "ClickClock Extension Error: API Key, User or Projects not found. You need to open the extension popup and set your API Key."
       );
       return;
     }
 
+    console.log({ tags });
+
     storageApiKeyRef.current = apiKey;
     storageUserRef.current = user;
     storageProjectsRef.current = projects;
+    setAllTags(tags);
 
     try {
       const lastTimeEntry = await getLastTimeEntry({
@@ -171,6 +195,7 @@ export const TimeButton = () => {
       if (changes.user) storageUserRef.current = changes.user.newValue;
       if (changes.projects)
         storageProjectsRef.current = changes.projects.newValue;
+      if (changes.tags) setAllTags(changes.tags.newValue);
     };
 
     chrome.storage.onChanged.addListener(listener);
@@ -182,25 +207,72 @@ export const TimeButton = () => {
 
   return (
     <Container>
-      <button
-        className={StyleHelper.mergeStyles(
-          "rounded-full border  border-dashed w-7 h-7 p-1.5 mx-4 group  transition-colors",
-          {
-            "border-red-500": isRunning,
-            "border-brand": !isRunning,
-            "cursor-pointer hover:border-opacity-60": isStarted,
-            "opacity-50 cursor-not-allowed": !isStarted,
-          }
-        )}
-        disabled={!isStarted}
-        onClick={isRunning ? handleStop : handlePlay}
-      >
-        {isRunning ? (
-          <IconClockStop className="w-full h-full stroke-red-500 stroke-1 group-hover:stroke-red-500/60 transition-colors" />
-        ) : (
-          <IconClockPlay className="w-full h-full stroke-brand stroke-1 group-hover:stroke-brand/60 transition-colors" />
-        )}
-      </button>
+      <RadixPopover.Root open={isOpen} onOpenChange={setIsOpen}>
+        <div
+          className={StyleHelper.mergeStyles(
+            "rounded-md border border-dashed w-fit h-7 transition-colors flex items-center mx-4",
+            {
+              "border-red-500": isRunning,
+              "border-brand": !isRunning,
+            }
+          )}
+        >
+          <button
+            className={StyleHelper.mergeStyles("px-1", {
+              "cursor-pointer hover:bg-brand/20": isStarted,
+              "opacity-50 cursor-not-allowed": !isStarted,
+            })}
+            disabled={!isStarted}
+            onClick={() => (isRunning ? handleStop() : handlePlay())}
+          >
+            {isRunning ? (
+              <IconClockStop className="w-full h-full stroke-red-500 stroke-1" />
+            ) : (
+              <IconClockPlay className="w-full h-full stroke-brand stroke-1" />
+            )}
+          </button>
+
+          <div
+            className={StyleHelper.mergeStyles(
+              "border-l border-dashed  h-full border-brand",
+              {
+                "opacity-50": selectIsDisabled,
+              }
+            )}
+          />
+
+          <RadixPopover.Trigger asChild disabled={selectIsDisabled}>
+            <button
+              className={StyleHelper.mergeStyles(
+                "flex items-center px-1 py-0.5 h-full",
+                {
+                  "cursor-pointer hover:bg-brand/20": !selectIsDisabled,
+                  "opacity-50 cursor-not-allowed": selectIsDisabled,
+                }
+              )}
+            >
+              <IconChevronDown className="w-3 h-3 stroke-brand" />
+            </button>
+          </RadixPopover.Trigger>
+        </div>
+
+        <RadixPopover.Content
+          side="bottom"
+          align="end"
+          sideOffset={5}
+          className=" bg-brand rounded-md text-xs flex flex-col z-50 overflow-hidden p-1 gap-1"
+        >
+          <RadixPopover.Arrow className="fill-brand" />
+          {allTags.map((tag) => (
+            <button
+              className="py-1 w-full px-4 text-center rounded-sm !text-gray-800 font-bold hover:bg-gray-800/20"
+              onClick={() => handlePlay(tag)}
+            >
+              {tag.name}
+            </button>
+          ))}
+        </RadixPopover.Content>
+      </RadixPopover.Root>
     </Container>
   );
 };

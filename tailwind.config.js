@@ -8,7 +8,7 @@ export default {
     extend: {
       colors: {
         brand: {
-          DEFAULT: "#a093e1"
+          DEFAULT: "#4C75F2"
         }
       }
     },

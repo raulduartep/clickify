@@ -3,6 +3,7 @@ import { IconKey, IconTrash } from "@tabler/icons-react";
 import {
   TGetProjectResponse,
   getAllProjects,
+  getAllTags,
   getUser,
 } from "../services/clockify";
 import { Container } from "./Container";
@@ -40,21 +41,26 @@ export const Popup = () => {
     try {
       setIsLoading(true);
       const user = await getUser(apiKey);
-      const projects = await getAllProjects({
-        apiKey,
-        workspaceId: user.activeWorkspace,
-      });
+
+      const [projects, tags] = await Promise.all([
+        getAllProjects({
+          apiKey,
+          workspaceId: user.activeWorkspace,
+        }),
+        getAllTags({ apiKey, workspaceId: user.activeWorkspace }),
+      ]);
+
       const formattedProjects = projects.map((project) => ({
         ...project,
         clickupListNames: [],
       }));
-
       setProjects(formattedProjects);
 
       await chrome.storage.local.set({
         user,
         apiKey,
         projects: formattedProjects,
+        tags,
       });
     } catch (error: any) {
       console.error("ClickClock Extension Error: " + error.message);
@@ -107,13 +113,16 @@ export const Popup = () => {
   };
 
   useEffect(() => {
-    chrome.storage.local.get(["apiKey", "projects"], ({ apiKey, projects }) => {
-      if (apiKey !== undefined || projects !== undefined) {
-        setApiKey(apiKey);
-        setIsFirstTime(false);
-        setProjects(projects);
+    chrome.storage.local.get(
+      ["apiKey", "projects", "tags"],
+      ({ apiKey, projects }) => {
+        if (apiKey !== undefined || projects !== undefined) {
+          setApiKey(apiKey);
+          setIsFirstTime(false);
+          setProjects(projects);
+        }
       }
-    });
+    );
   }, []);
 
   return (
@@ -145,7 +154,7 @@ export const Popup = () => {
 
           {projects.length > 0 ? (
             <>
-              <div className="flex w-full gap-x-2">
+              <div className="flex w-full gap-x-2  px-4">
                 <Input
                   id="new-list-name"
                   placeholder="Add new Clickup list name"
@@ -164,9 +173,7 @@ export const Popup = () => {
                 />
               </div>
 
-              <Separator className="my-4" />
-
-              <ul className="max-h-[300px] overflow-y-auto w-full flex flex-col gap-y-2">
+              <ul className="max-h-[300px] overflow-y-auto w-full flex flex-col gap-y-2 mt-4 px-4">
                 {projects.map((project) => (
                   <li
                     aria-current={selectedProject?.id === project.id}

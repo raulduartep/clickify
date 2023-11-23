@@ -1,5 +1,5 @@
 {
-  "name": "clickclock-extension",
+  "name": "clickify",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@radix-ui/react-popover": "^1.0.7",
     "@tabler/icons-react": "^2.40.0",
     "classnames": "^2.3.2",
     "dayjs": "^1.11.10",

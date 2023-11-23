@@ -1,5 +1,5 @@
 {
-  "name": "ClickClock Extension",
+  "name": "Clickify",
   "description": "Log hours on Clockify at the same time you change status on ClickUp on a Chrome Extension",
   "version": "1.0",
   "manifest_version": 3,
