@@ -62,13 +62,17 @@ export const TimeButton = () => {
     const clickupListNames = Array.from(
       document.querySelectorAll("cu-task-list-name")
     )
-      .map((element) => element.textContent?.replace(/^\s+|\s+$/g, ""))
+      .map((element) =>
+        element.textContent?.replace(/^\s+|\s+$/g, "").toLowerCase()
+      )
       .filter((name): name is string => !!name);
 
     const foundProject = storageProjects.find((project) => {
       return (
-        clickupListNames.includes(project.name) ||
-        project.clickupListNames.some((name) => clickupListNames.includes(name))
+        clickupListNames.includes(project.name.toLowerCase()) ||
+        project.clickupListNames.some((name) =>
+          clickupListNames.includes(name.toLowerCase())
+        )
       );
     });
     return foundProject;
@@ -151,7 +155,7 @@ export const TimeButton = () => {
       const clickupIdFromText = UtilsHelper.getClickupIdFromText(
         runningEntry.description
       );
-      console.log({ clickupIdFromText, currentClickupTaskId });
+
       if (!clickupIdFromText || clickupIdFromText !== currentClickupTaskId) {
         setIsRunning(false);
         return;
