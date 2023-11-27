@@ -63,7 +63,7 @@ export const Popup = () => {
         tags,
       });
     } catch (error: any) {
-      console.error("ClickClock Extension Error: " + error.message);
+      console.error("Clickify Extension Error: " + error.message);
     } finally {
       setIsLoading(false);
       setIsFirstTime(false);

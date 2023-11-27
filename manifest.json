@@ -19,8 +19,17 @@
         "https://app.clickup.com/*"
       ],
       "js": [
-        "src/content-script.tsx"
+        "src/clickup-content-script.tsx"
       ]
+    },
+    {
+      "matches": [
+        "https://app.clockify.me/*"
+      ],
+      "js": [
+        "src/clockify-content-script.tsx"
+      ],
+      "run_at": "document_end"
     }
   ],
   "permissions": [

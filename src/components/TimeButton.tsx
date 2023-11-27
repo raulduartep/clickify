@@ -13,14 +13,32 @@ import {
   TGetUserResponse,
   TTimeEntryResponse,
   createNewTimeEntry,
-  getLastTimeEntry,
   stopRunningTimeEntry,
 } from "../services/clockify";
 import { Container } from "./Container";
 import { StyleHelper } from "../helpers/StyleHelper";
 import { TClockifyProjectWithClickupList } from "./Popup";
+import { UtilsHelper } from "../helpers/UtilsHelper";
 
 dayjs.extend(utc);
+
+const getTaskName = () => {
+  const taskNameElement = document.querySelector("#task-name");
+  if (!taskNameElement) {
+    throw new Error("Task name element not found");
+  }
+
+  return taskNameElement.textContent ?? "";
+};
+
+const getTaskId = () => {
+  const [, , taskId] = document.location.pathname.split("/");
+  return taskId;
+};
+
+const generateTimeEntryDescription = () => {
+  return `#${getTaskId()} - ${getTaskName()}`;
+};
 
 export const TimeButton = () => {
   const [isRunning, setIsRunning] = useState(false);
@@ -36,18 +54,6 @@ export const TimeButton = () => {
   const storageProjectsRef = useRef<TClockifyProjectWithClickupList[]>();
 
   const selectIsDisabled = !isStarted || isRunning || !allTags;
-
-  const generateTimeEntryDescription = useCallback(() => {
-    const taskNameElement = document.querySelector("#task-name");
-    if (!taskNameElement) {
-      throw new Error("Task name element not found");
-    }
-
-    const taskName = taskNameElement.textContent ?? "";
-    const [, , taskId] = document.location.pathname.split("/");
-
-    return `#${taskId} - ${taskName}`;
-  }, []);
 
   const getProject = () => {
     const storageProjects = storageProjectsRef.current;
@@ -94,11 +100,11 @@ export const TimeButton = () => {
           workspaceId: storageUserRef.current.activeWorkspace,
         },
       });
-
-      setIsRunning(true);
       runningEntryRef.current = createdTimeEntry;
+      await chrome.storage.local.set({ runningEntry: createdTimeEntry });
+      setIsRunning(true);
     } catch (error: any) {
-      console.error("ClickClock Extension Error: " + error.message);
+      console.error("Clickify Extension Error: " + error.message);
     }
   }
 
@@ -123,62 +129,72 @@ export const TimeButton = () => {
             workspaceId: storageUserRef.current.activeWorkspace,
           },
         });
+        await chrome.storage.local.remove(["runningEntry"]);
       } catch {
         /* empty */
       }
 
       setIsRunning(false);
     } catch (error: any) {
-      console.error("ClickClock Extension Error: " + error.message);
+      console.error("Clickify Extension Error: " + error.message);
     }
   }
 
-  const init = useCallback(async () => {
-    const { apiKey, user, projects, tags } = await chrome.storage.local.get([
-      "apiKey",
-      "user",
-      "projects",
-      "tags",
-    ]);
-
-    if (
-      apiKey === undefined ||
-      user === undefined ||
-      projects === undefined ||
-      tags === undefined
-    ) {
-      console.error(
-        "ClickClock Extension Error: API Key, User or Projects not found. You need to open the extension popup and set your API Key."
-      );
-      return;
-    }
-
-    console.log({ tags });
-
-    storageApiKeyRef.current = apiKey;
-    storageUserRef.current = user;
-    storageProjectsRef.current = projects;
-    setAllTags(tags);
-
-    try {
-      const lastTimeEntry = await getLastTimeEntry({
-        apiKey,
-        workspaceId: user.activeWorkspace,
-        userId: user.id,
-      });
-
-      if (lastTimeEntry.timeInterval.end || lastTimeEntry.timeInterval.duration)
+  const checkRunningStorageEntry = useCallback(
+    async (runningEntry?: TTimeEntryResponse) => {
+      if (!runningEntry) {
+        setIsRunning(false);
         return;
+      }
 
-      const description = generateTimeEntryDescription();
-      if (description !== lastTimeEntry.description) return;
+      const currentClickupTaskId = getTaskId();
+      const clickupIdFromText = UtilsHelper.getClickupIdFromText(
+        runningEntry.description
+      );
+      console.log({ clickupIdFromText, currentClickupTaskId });
+      if (!clickupIdFromText || clickupIdFromText !== currentClickupTaskId) {
+        setIsRunning(false);
+        return;
+      }
 
-      runningEntryRef.current = lastTimeEntry;
+      runningEntryRef.current = runningEntry;
       setIsRunning(true);
-    } finally {
+    },
+    []
+  );
+
+  const init = useCallback(async () => {
+    try {
+      const { apiKey, user, projects, tags, runningEntry } =
+        await chrome.storage.local.get([
+          "apiKey",
+          "user",
+          "projects",
+          "tags",
+          "runningEntry",
+        ]);
+
+      if (
+        apiKey === undefined ||
+        user === undefined ||
+        projects === undefined ||
+        tags === undefined
+      )
+        throw new Error(
+          "API Key, User or Projects not found. You need to open the extension popup and set your API Key."
+        );
+
+      storageApiKeyRef.current = apiKey;
+      storageUserRef.current = user;
+      storageProjectsRef.current = projects;
+      setAllTags(tags);
       setIsStarted(true);
+
+      checkRunningStorageEntry(runningEntry);
+    } catch (error: any) {
+      console.error("Clickify Extension Error: " + error.message);
     }
-  }, [generateTimeEntryDescription]);
+  }, [checkRunningStorageEntry]);
 
   useEffect(() => {
     init();
@@ -196,6 +212,10 @@ export const TimeButton = () => {
       if (changes.projects)
         storageProjectsRef.current = changes.projects.newValue;
       if (changes.tags) setAllTags(changes.tags.newValue);
+
+      if (changes.runningEntry) {
+        checkRunningStorageEntry(changes.runningEntry.newValue);
+      }
     };
 
     chrome.storage.onChanged.addListener(listener);
@@ -203,7 +223,7 @@ export const TimeButton = () => {
     return () => {
       chrome.storage.onChanged.removeListener(listener);
     };
-  }, []);
+  }, [checkRunningStorageEntry]);
 
   return (
     <Container>
