@@ -19,6 +19,7 @@ import { Container } from "./Container";
 import { StyleHelper } from "../helpers/StyleHelper";
 import { TClockifyProjectWithClickupList } from "./Popup";
 import { UtilsHelper } from "../helpers/UtilsHelper";
+import { CountUp } from "./CountUp";
 
 dayjs.extend(utc);
 
@@ -42,13 +43,13 @@ const generateTimeEntryDescription = () => {
 
 export const TimeButton = () => {
   const [isRunning, setIsRunning] = useState(false);
-  const [isStarted, setIsStarted] = useState(true);
+  const [isStarted, setIsStarted] = useState(false);
 
   const [allTags, setAllTags] = useState<TGetTagResponse[]>([]);
+  const [runningEntry, setRunningEntry] = useState<TTimeEntryResponse>();
 
   const [isOpen, setIsOpen] = useState(false);
 
-  const runningEntryRef = useRef<TTimeEntryResponse>();
   const storageApiKeyRef = useRef<string>();
   const storageUserRef = useRef<TGetUserResponse>();
   const storageProjectsRef = useRef<TClockifyProjectWithClickupList[]>();
@@ -60,7 +61,7 @@ export const TimeButton = () => {
     if (!storageProjects) return;
 
     const clickupListNames = Array.from(
-      document.querySelectorAll("cu-task-list-name")
+      document.querySelectorAll("cu-task-breadcrumbs cu-task-list-name")
     )
       .map((element) =>
         element.textContent?.replace(/^\s+|\s+$/g, "").toLowerCase()
@@ -104,7 +105,7 @@ export const TimeButton = () => {
           workspaceId: storageUserRef.current.activeWorkspace,
         },
       });
-      runningEntryRef.current = createdTimeEntry;
+      setRunningEntry(createdTimeEntry);
       await chrome.storage.local.set({ runningEntry: createdTimeEntry });
       setIsRunning(true);
     } catch (error: any) {
@@ -139,6 +140,7 @@ export const TimeButton = () => {
       }
 
       setIsRunning(false);
+      setRunningEntry(undefined);
     } catch (error: any) {
       console.error("Clickify Extension Error: " + error.message);
     }
@@ -146,23 +148,27 @@ export const TimeButton = () => {
 
   const checkRunningStorageEntry = useCallback(
     async (runningEntry?: TTimeEntryResponse) => {
-      if (!runningEntry) {
+      try {
+        if (!runningEntry) {
+          throw new Error();
+        }
+
+        const currentClickupTaskId = getTaskId();
+        const clickupIdFromText = UtilsHelper.getClickupIdFromText(
+          runningEntry.description
+        );
+
+        if (!clickupIdFromText || clickupIdFromText !== currentClickupTaskId) {
+          throw new Error();
+        }
+
+        setRunningEntry(runningEntry);
+        setIsRunning(true);
+      } catch (error) {
         setIsRunning(false);
+        setRunningEntry(undefined);
         return;
       }
-
-      const currentClickupTaskId = getTaskId();
-      const clickupIdFromText = UtilsHelper.getClickupIdFromText(
-        runningEntry.description
-      );
-
-      if (!clickupIdFromText || clickupIdFromText !== currentClickupTaskId) {
-        setIsRunning(false);
-        return;
-      }
-
-      runningEntryRef.current = runningEntry;
-      setIsRunning(true);
     },
     []
   );
@@ -234,15 +240,16 @@ export const TimeButton = () => {
       <RadixPopover.Root open={isOpen} onOpenChange={setIsOpen}>
         <div
           className={StyleHelper.mergeStyles(
-            "rounded-md border border-dashed w-fit h-7 transition-colors flex items-center mx-4",
+            "rounded-md border border-dashed w-fit h-7 flex items-center mx-4",
             {
               "border-red-500": isRunning,
               "border-brand": !isRunning,
+              "border-opacity-50": !isStarted,
             }
           )}
         >
           <button
-            className={StyleHelper.mergeStyles("px-1", {
+            className={StyleHelper.mergeStyles("px-1 flex gap-1 items-center", {
               "cursor-pointer hover:bg-brand/20": isStarted,
               "opacity-50 cursor-not-allowed": !isStarted,
             })}
@@ -254,6 +261,8 @@ export const TimeButton = () => {
             ) : (
               <IconClockPlay className="w-full h-full stroke-brand stroke-1" />
             )}
+
+            {runningEntry && <CountUp runningEntry={runningEntry} />}
           </button>
 
           <div
