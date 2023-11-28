@@ -91,7 +91,6 @@ const watchTimeTracker = async () => {
 
       return [...acc, element];
     }, [] as Element[]);
-
     filteredElementArray.forEach((element) => {
       element.parentElement?.removeEventListener(
         "click",
@@ -104,6 +103,12 @@ const watchTimeTracker = async () => {
         handleTimeButtonClick,
         true
       );
+    });
+
+    const dropdownMenu = document.querySelectorAll(".cl-dropdown-item");
+    const dropdownMenuArray = Array.from(dropdownMenu) as HTMLElement[];
+    dropdownMenuArray.forEach((element) => {
+      element.addEventListener("click", handleStartButtonClick, true);
     });
   });
 
@@ -134,6 +139,13 @@ const unwatchTimeTracker = async () => {
       handleTimeButtonClick,
       true
     );
+  });
+
+  const dropdownMenu = document.querySelectorAll(".cl-dropdown-item");
+  const dropdownMenuArray = Array.from(dropdownMenu);
+
+  dropdownMenuArray.forEach((element) => {
+    element.removeEventListener("click", () => {}, true);
   });
 
   const titleElement = document.querySelector(
