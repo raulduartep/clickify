@@ -1,6 +1,10 @@
 import { URLHelper } from "./helpers/URLHelper";
 import { UtilsHelper } from "./helpers/UtilsHelper";
 import { getLastTimeEntry } from "./services/clockify";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
 
 console.info("Clickify Extension Info: content script loaded");
 
@@ -45,7 +49,36 @@ const functionByButtonName: Record<string, () => Promise<void>> = {
   discard: handleStopButtonClick,
 };
 
-const handleInputChange = async (event: HTMLElementEventMap["change"]) => {
+const handleTimeChange = async (event: HTMLElementEventMap["change"]) => {
+  const { runningEntry } = await chrome.storage.local.get(["runningEntry"]);
+  if (!runningEntry) return;
+
+  const element = event.target as HTMLInputElement;
+  const [hour, minutes] = element.value.split(":");
+
+  const start = dayjs
+    .utc(runningEntry.timeInterval.start)
+    .local()
+    .set("hours", Number(hour))
+    .set("minutes", Number(minutes))
+    .set("seconds", 0)
+    .utc()
+    .format("YYYY-MM-DDTHH:mm:ss[Z]");
+
+  await chrome.storage.local.set({
+    runningEntry: {
+      ...runningEntry,
+      timeInterval: {
+        ...runningEntry.timeInterval,
+        start,
+      },
+    },
+  });
+};
+
+const handleDescriptionChange = async (
+  event: HTMLElementEventMap["change"]
+) => {
   const { runningEntry } = await chrome.storage.local.get(["runningEntry"]);
   if (!runningEntry) return;
 
@@ -110,6 +143,13 @@ const watchTimeTracker = async () => {
     dropdownMenuArray.forEach((element) => {
       element.addEventListener("click", handleStartButtonClick, true);
     });
+
+    const updateTimeInputElement = document.querySelector(
+      ".cl-stopwatch-dropdown-input input"
+    );
+    if (updateTimeInputElement) {
+      updateTimeInputElement.addEventListener("change", handleTimeChange, true);
+    }
   });
 
   const observerElement = await UtilsHelper.waitForElement(
@@ -124,9 +164,9 @@ const watchTimeTracker = async () => {
   const titleElement = document.querySelector(
     "input.cl-input-timetracker-main"
   );
-  if (!titleElement) return;
-
-  titleElement.addEventListener("change", handleInputChange, true);
+  if (titleElement) {
+    titleElement.addEventListener("change", handleDescriptionChange, true);
+  }
 };
 
 const unwatchTimeTracker = async () => {
@@ -151,9 +191,16 @@ const unwatchTimeTracker = async () => {
   const titleElement = document.querySelector(
     "input.cl-input-timetracker-main"
   );
-  if (!titleElement) return;
+  if (titleElement) {
+    titleElement.removeEventListener("change", handleDescriptionChange, true);
+  }
 
-  titleElement.addEventListener("change", handleInputChange, true);
+  const updateTimeInputElement = document.querySelector(
+    ".cl-stopwatch-dropdown-input input"
+  );
+  if (updateTimeInputElement) {
+    updateTimeInputElement.addEventListener("change", handleTimeChange, true);
+  }
 };
 
 const init = async () => {

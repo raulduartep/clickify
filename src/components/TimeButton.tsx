@@ -89,7 +89,7 @@ export const TimeButton = () => {
         );
       }
 
-      const start = dayjs.utc().format("YYYY-MM-DDTHH:mm:ssZ");
+      const start = dayjs.utc().format("YYYY-MM-DDTHH:mm:ss[Z]");
       const description = generateTimeEntryDescription();
       const project = getProject();
       const createdTimeEntry = await createNewTimeEntry({
@@ -121,7 +121,7 @@ export const TimeButton = () => {
         );
       }
 
-      const formattedNow = dayjs.utc().format("YYYY-MM-DDTHH:mm:ssZ");
+      const formattedNow = dayjs.utc().format("YYYY-MM-DDTHH:mm:ss[Z]");
 
       try {
         await stopRunningTimeEntry({
@@ -250,16 +250,18 @@ export const TimeButton = () => {
         >
           <button
             className={StyleHelper.mergeStyles("px-1 flex gap-1 items-center", {
-              "cursor-pointer hover:bg-brand/20": isStarted,
+              "cursor-pointer": isStarted,
+              "hover:bg-brand/20": isStarted && !isRunning,
+              "hover:bg-red-500/20": isStarted && isRunning,
               "opacity-50 cursor-not-allowed": !isStarted,
             })}
             disabled={!isStarted}
             onClick={() => (isRunning ? handleStop() : handlePlay())}
           >
             {isRunning ? (
-              <IconClockStop className="w-full h-full stroke-red-500 stroke-1" />
+              <IconClockStop className="w-6 h-6 !stroke-red-500 stroke-1" />
             ) : (
-              <IconClockPlay className="w-full h-full stroke-brand stroke-1" />
+              <IconClockPlay className="w-6 h-6 !stroke-brand stroke-1" />
             )}
 
             {runningEntry && <CountUp runningEntry={runningEntry} />}
