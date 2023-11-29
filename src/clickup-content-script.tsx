@@ -18,7 +18,7 @@ const createRoot = async () => {
 };
 
 const deleteRoot = () => {
-  const root = document.getElementById("crx-root");
+  const root = document.getElementById("clickify-extension-root");
   if (root) {
     root.remove();
   }
