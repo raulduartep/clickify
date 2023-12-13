@@ -33,7 +33,10 @@ export const CountUp = ({ runningEntry }: TProps) => {
       setSeconds((prev) => prev + 1);
     }, 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+      window.removeEventListener("focus", calculateSeconds);
+      clearInterval(interval);
+    };
   }, [calculateSeconds]);
 
   return (
