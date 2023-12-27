@@ -6,10 +6,18 @@ export default {
   ],
   theme: {
     extend: {
+      fontSize: {
+        "2xs": "0.5rem"
+      },
       colors: {
         brand: {
           DEFAULT: "#4C75F2"
-        }
+        },
+        grey: {
+          100: "#d5d6d7",
+          800: "#30353c"
+        },
+
       }
     },
   },

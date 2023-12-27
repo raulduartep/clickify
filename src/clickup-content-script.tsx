@@ -1,20 +1,29 @@
 import ReactDOM from "react-dom/client";
-import { URLHelper } from "./helpers/URLHelper";
-import { TimeButton } from "./components/TimeButton";
 import { UtilsHelper } from "./helpers/UtilsHelper";
+import { ClickupContainer } from "./components/ClickupContainer";
+import { ClickupHelper } from "./helpers/ClickupHelper";
 
 console.info("Clickify Extension Info: content script loaded");
 
 const createRoot = async () => {
-  const element = await UtilsHelper.waitForElement(
-    ".cu-task-header__section_rightside "
-  );
-
+  const htmlElement = await UtilsHelper.waitForElement(".cu-v2, .cu-v3");
+  const version = htmlElement.className.includes("cu-v2") ? "v2" : "v3";
   const root = document.createElement("div");
   root.id = "clickify-extension-root";
-  element.insertBefore(root, element.childNodes[0]);
 
-  ReactDOM.createRoot(root).render(<TimeButton />);
+  if (version === "v2") {
+    const parent = await UtilsHelper.waitForElement(
+      ".cu-task-header__section_rightside"
+    );
+    parent.insertBefore(root, parent.childNodes[0]);
+  } else {
+    const parent = await UtilsHelper.waitForElement(
+      "cu-task-view-integrations-lazy"
+    );
+    parent.insertBefore(root, parent.childNodes[0]);
+  }
+
+  ReactDOM.createRoot(root).render(<ClickupContainer version={version} />);
 };
 
 const deleteRoot = () => {
@@ -27,7 +36,7 @@ const deleteRoot = () => {
 const init = async () => {
   let url = document.location.href;
 
-  if (URLHelper.isClickupTaskUrl(url)) {
+  if (ClickupHelper.isClickupTaskUrl(url)) {
     createRoot();
   }
 
@@ -35,7 +44,7 @@ const init = async () => {
     if (url === document.location.href) return;
     url = document.location.href;
 
-    if (URLHelper.isClickupTaskUrl(url)) {
+    if (ClickupHelper.isClickupTaskUrl(url)) {
       createRoot();
       return;
     }

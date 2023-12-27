@@ -1,10 +1,6 @@
-import { URLHelper } from "./helpers/URLHelper";
 import { UtilsHelper } from "./helpers/UtilsHelper";
-import { getLastTimeEntry } from "./services/clockify";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-
-dayjs.extend(utc);
+import { ClockifyService } from "./services/ClockifyService";
+import { ClockifyHelper } from "./helpers/ClockifyHelper";
 
 console.info("Clickify Extension Info: content script loaded");
 
@@ -24,7 +20,7 @@ const handleStartButtonClick = async () => {
   // Waiting for the time entry to be created
   await UtilsHelper.sleep(100);
 
-  const runningEntry = await getLastTimeEntry({
+  const runningEntry = await ClockifyService.getLastTimeEntry({
     apiKey: apiKey,
     userId: user.id,
     workspaceId: user.activeWorkspace,
@@ -56,14 +52,12 @@ const handleTimeChange = async (event: HTMLElementEventMap["change"]) => {
   const element = event.target as HTMLInputElement;
   const [hour, minutes] = element.value.split(":");
 
-  const start = dayjs
-    .utc(runningEntry.timeInterval.start)
-    .local()
-    .set("hours", Number(hour))
-    .set("minutes", Number(minutes))
-    .set("seconds", 0)
-    .utc()
-    .format("YYYY-MM-DDTHH:mm:ss[Z]");
+  const start = ClockifyHelper.generateFormattedDateTime(
+    runningEntry.timeInterval.start,
+    Number(hour),
+    Number(minutes),
+    0
+  );
 
   await chrome.storage.local.set({
     runningEntry: {
@@ -204,7 +198,7 @@ const unwatchTimeTracker = async () => {
 };
 
 const init = async () => {
-  if (URLHelper.isClockifyTrackerUrl(url)) {
+  if (ClockifyHelper.isClockifyTrackerUrl(url)) {
     watchTimeTracker();
   }
 
@@ -212,7 +206,7 @@ const init = async () => {
     if (url === document.location.href) return;
     url = document.location.href;
 
-    if (URLHelper.isClockifyTrackerUrl(url)) {
+    if (ClockifyHelper.isClockifyTrackerUrl(url)) {
       watchTimeTracker();
       return;
     }

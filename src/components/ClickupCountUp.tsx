@@ -2,16 +2,16 @@ import { useCallback, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import utc from "dayjs/plugin/utc";
-import { TTimeEntryResponse } from "../services/clockify";
+import { TClockifyTimeEntryResponse } from "../@types/services";
 
 dayjs.extend(duration);
 dayjs.extend(utc);
 
 type TProps = {
-  runningEntry: TTimeEntryResponse;
+  runningEntry: TClockifyTimeEntryResponse;
 };
 
-export const CountUp = ({ runningEntry }: TProps) => {
+export const ClickupCountUp = ({ runningEntry }: TProps) => {
   const [seconds, setSeconds] = useState(0);
 
   const formatted = dayjs.duration(seconds, "seconds").format("HH:mm:ss");
@@ -39,9 +39,5 @@ export const CountUp = ({ runningEntry }: TProps) => {
     };
   }, [calculateSeconds]);
 
-  return (
-    <p className="text-xs !text-red-500 min-w-[3.5rem] max-w-[3.5rem]">
-      {formatted}
-    </p>
-  );
+  return <p className="text-2xs text-center !text-red-500">{formatted}</p>;
 };

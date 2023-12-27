@@ -1,19 +1,11 @@
 import { useEffect, useState } from "react";
 import { IconKey, IconTrash } from "@tabler/icons-react";
-import {
-  TGetProjectResponse,
-  getAllProjects,
-  getAllTags,
-  getUser,
-} from "../services/clockify";
 import { Container } from "./Container";
 import { Input } from "./Input";
 import { Button } from "./Button";
 import { Separator } from "./Separator";
-
-export type TClockifyProjectWithClickupList = TGetProjectResponse & {
-  clickupListNames: string[];
-};
+import { TClockifyProjectWithClickupList } from "../@types/services";
+import { ClockifyService } from "../services/ClockifyService";
 
 export const Popup = () => {
   const [apiKey, setApiKey] = useState("");
@@ -26,6 +18,7 @@ export const Popup = () => {
 
   const [selectedProject, setSelectedProject] =
     useState<TClockifyProjectWithClickupList>();
+
   const [projects, setProjects] = useState<TClockifyProjectWithClickupList[]>(
     []
   );
@@ -40,14 +33,17 @@ export const Popup = () => {
 
     try {
       setIsLoading(true);
-      const user = await getUser(apiKey);
+      const user = await ClockifyService.getUser(apiKey);
 
       const [projects, tags] = await Promise.all([
-        getAllProjects({
+        ClockifyService.getAllProjects({
           apiKey,
           workspaceId: user.activeWorkspace,
         }),
-        getAllTags({ apiKey, workspaceId: user.activeWorkspace }),
+        ClockifyService.getAllTags({
+          apiKey,
+          workspaceId: user.activeWorkspace,
+        }),
       ]);
 
       const formattedProjects = projects.map((project) => ({
