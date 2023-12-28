@@ -1,6 +1,7 @@
 import { UtilsHelper } from "./helpers/UtilsHelper";
 import { ClockifyService } from "./services/ClockifyService";
 import { ClockifyHelper } from "./helpers/ClockifyHelper";
+import { DateUTCHelper } from "./helpers/DateHelper";
 
 console.info("Clickify Extension Info: content script loaded");
 
@@ -52,7 +53,7 @@ const handleTimeChange = async (event: HTMLElementEventMap["change"]) => {
   const element = event.target as HTMLInputElement;
   const [hour, minutes] = element.value.split(":");
 
-  const start = ClockifyHelper.generateFormattedDateTime(
+  const start = DateUTCHelper.editTimeFromLocalAndFormatDateTime(
     runningEntry.timeInterval.start,
     Number(hour),
     Number(minutes),

@@ -30,6 +30,7 @@ export type TClockifyCreateNewTimeEntryParams = {
     billable: boolean;
     description: string;
     start: string;
+    end?: string;
     projectId?: string;
     tagIds?: string[];
   };

@@ -1,20 +1,31 @@
 import { ComponentProps, cloneElement } from "react";
 import { StyleHelper } from "../helpers/StyleHelper";
+import InputMask from "react-input-mask";
 
-type Props = {
+export type TInputProps = {
   leftIcon?: JSX.Element;
   hasError?: boolean;
+  flat?: boolean;
+  mask?: string;
 } & ComponentProps<"input">;
 
 export const Input = ({
   leftIcon,
   className,
   hasError = false,
+  flat = false,
+  mask,
   ...props
-}: Props) => {
+}: TInputProps) => {
   const { className: leftIconClassName = "", ...leftIconProps } = leftIcon
     ? leftIcon.props
     : {};
+
+  const Component = mask ? (
+    <InputMask mask={mask} maskChar={null} />
+  ) : (
+    <input />
+  );
 
   return (
     <div className="w-full relative group outline-none">
@@ -27,19 +38,21 @@ export const Input = ({
           ...leftIconProps,
         })}
 
-      <input
-        className={StyleHelper.mergeStyles(
-          "w-full bg-gray-700 py-2.5 pr-2.5 rounded-lg placeholder-gray-400 border ring-1 ring-transparent outline-none transition-colors text-gray-100 disabled:opacity-50",
+      {cloneElement(Component, {
+        className: StyleHelper.mergeStyles(
+          "w-full bg-transparent focus:shadow-none pr-2.5 rounded-sm placeholder-gray-400 border ring- ring-transparent outline-none transition-colors text-grey-100 disabled:opacity-50",
           {
-            "border-red-600/70 focus:ring-red-600/70 ": hasError,
-            "border-gray-600 focus:border-brand focus:ring-brand ": !hasError,
+            "border-red-600/70": hasError,
+            "border-grey-600 focus:border-brand": !hasError,
             "pl-10": !!leftIcon,
             "pl-2.5": !leftIcon,
+            "h-10": !flat,
+            "h-7": flat,
           },
           className
-        )}
-        {...props}
-      />
+        ),
+        ...props,
+      })}
     </div>
   );
 };

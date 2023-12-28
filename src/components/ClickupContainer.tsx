@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { Container } from "./Container";
-import { ClickupTimeButton } from "./ClickupTimeButton";
+import { ClickupStartStopTimeButton } from "./ClickupStartStopTimeButton";
 import {
   TClockifyGetTagResponse,
   TClockifyGetUserResponse,
@@ -10,8 +10,10 @@ import {
 } from "../@types/services";
 import { ClickupHelper } from "../helpers/ClickupHelper";
 import { ClockifyService } from "../services/ClockifyService";
-import { ClockifyHelper } from "../helpers/ClockifyHelper";
 import { TClickupVersion } from "../@types/clickup";
+import { ClickupInputTimeButton } from "./ClickupInputTimeButton";
+import { StyleHelper } from "../helpers/StyleHelper";
+import { DateUTCHelper } from "../helpers/DateHelper";
 
 type TProps = {
   version: TClickupVersion;
@@ -38,7 +40,7 @@ export const ClickupContainer = ({ version }: TProps) => {
         );
       }
 
-      const start = ClockifyHelper.generateFormattedNow();
+      const start = DateUTCHelper.formattedNowDateTime();
       const description = ClickupHelper.getCurrentTimeEntryDescription(version);
       const project = ClickupHelper.getCurrentProject(projects, version);
 
@@ -71,7 +73,7 @@ export const ClickupContainer = ({ version }: TProps) => {
         );
       }
 
-      const end = ClockifyHelper.generateFormattedNow();
+      const end = DateUTCHelper.formattedNowDateTime();
       await ClockifyService.stopRunningTimeEntry({
         body: {
           end,
@@ -88,6 +90,35 @@ export const ClickupContainer = ({ version }: TProps) => {
     } finally {
       setIsRunning(false);
       setRunningEntry(undefined);
+    }
+  }
+
+  async function handleAdd(start: string, end: string) {
+    try {
+      if (!apiKey || !user || !projects) {
+        throw new Error(
+          "API Key, User or Projects not found. You need to open the extension popup and set your API Key."
+        );
+      }
+
+      const description = ClickupHelper.getCurrentTimeEntryDescription(version);
+      const project = ClickupHelper.getCurrentProject(projects, version);
+
+      await ClockifyService.createNewTimeEntry({
+        body: {
+          billable: true,
+          description,
+          start,
+          end,
+          projectId: project?.id,
+        },
+        config: {
+          apiKey: apiKey,
+          workspaceId: user.activeWorkspace,
+        },
+      });
+    } catch (error: any) {
+      console.error("Clickify Extension Error: " + error.message);
     }
   }
 
@@ -154,15 +185,24 @@ export const ClickupContainer = ({ version }: TProps) => {
 
   return (
     <Container>
-      <ClickupTimeButton
-        tags={tags}
-        isRunning={isRunning}
-        disabled={disabled}
-        onPlay={handlePlay}
-        onStop={handleStop}
-        runningEntry={runningEntry}
-        version={version}
-      />
+      <div
+        className={StyleHelper.mergeStyles("flex gap-2", {
+          "mx-4 ": version === "v2",
+          "flex-col mt-3": version === "v3",
+        })}
+      >
+        <ClickupStartStopTimeButton
+          tags={tags}
+          isRunning={isRunning}
+          disabled={disabled}
+          onPlay={handlePlay}
+          onStop={handleStop}
+          runningEntry={runningEntry}
+          version={version}
+        />
+
+        <ClickupInputTimeButton onAdd={handleAdd} version={version} />
+      </div>
     </Container>
   );
 };

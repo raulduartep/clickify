@@ -26,7 +26,7 @@ type TProps = {
   version: TClickupVersion;
 };
 
-export const ClickupTimeButton = ({
+export const ClickupStartStopTimeButton = ({
   tags,
   isRunning,
   disabled,
@@ -56,12 +56,7 @@ export const ClickupTimeButton = ({
   return (
     <Container>
       <RadixPopover.Root open={isOpen} onOpenChange={setIsOpen}>
-        <div
-          className={StyleHelper.mergeStyles("flex flex-col relative", {
-            "mx-4": version === "v2",
-            "mt-3": version === "v3",
-          })}
-        >
+        <div className="flex flex-col relative">
           <div
             className={StyleHelper.mergeStyles(
               "rounded-md border border-dashed flex items-center",
