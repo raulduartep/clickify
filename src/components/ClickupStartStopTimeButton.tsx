@@ -10,47 +10,33 @@ import * as RadixPopover from "@radix-ui/react-popover";
 import { Container } from "./Container";
 import { StyleHelper } from "../helpers/StyleHelper";
 import { ClickupCountUp } from "./ClickupCountUp";
-import {
-  TClockifyGetTagResponse,
-  TClockifyTimeEntryResponse,
-} from "../@types/services";
+import { TClockifyGetTagResponse } from "../@types/services";
 import { TClickupVersion } from "../@types/clickup";
+import { useClockify } from "../hooks/useClockify";
+import { useCurrentIsRunning } from "../hooks/useCurrentIsRunning";
 
 type TProps = {
-  disabled: boolean;
-  isRunning: boolean;
-  tags: TClockifyGetTagResponse[];
-  onPlay?(tag?: TClockifyGetTagResponse): void;
-  onStop?(): void;
-  runningEntry?: TClockifyTimeEntryResponse;
   version: TClickupVersion;
 };
 
-export const ClickupStartStopTimeButton = ({
-  tags,
-  isRunning,
-  disabled,
-  onPlay,
-  onStop,
-  runningEntry,
-  version,
-}: TProps) => {
+export const ClickupStartStopTimeButton = ({ version }: TProps) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  const selectIsDisabled = disabled || isRunning || !tags;
+  const { playEntry, stopEntry, hasAllValues, values } = useClockify(version);
+  const isRunning = useCurrentIsRunning();
+  const selectIsDisabled = !hasAllValues || isRunning;
 
   const handleClick = () => {
     if (isRunning) {
-      onStop?.();
+      stopEntry();
       return;
     }
 
-    onPlay?.();
+    playEntry();
   };
 
   const handleTagClick = (tag: TClockifyGetTagResponse) => {
     setIsOpen(false);
-    onPlay?.(tag);
+    playEntry(tag);
   };
 
   return (
@@ -65,20 +51,20 @@ export const ClickupStartStopTimeButton = ({
                 "h-7 w-fit": version === "v2",
                 "border-red-500": isRunning,
                 "border-brand": !isRunning,
-                "border-opacity-50": disabled,
+                "border-opacity-50": !hasAllValues,
               }
             )}
           >
             <button
               className={StyleHelper.mergeStyles("flex gap-1 items-center", {
-                "cursor-pointer": !disabled,
-                "hover:bg-brand/20": !disabled && !isRunning,
-                "hover:bg-red-500/20": !disabled && isRunning,
-                "opacity-50 cursor-not-allowed": disabled,
+                "cursor-pointer": hasAllValues,
+                "hover:bg-brand/20": hasAllValues && !isRunning,
+                "hover:bg-red-500/20": hasAllValues && isRunning,
+                "opacity-50 cursor-not-allowed": !hasAllValues,
                 "px-1": version === "v2",
                 "p-1 flex-col": version === "v3",
               })}
-              disabled={disabled}
+              disabled={!hasAllValues}
               onClick={handleClick}
             >
               {isRunning ? (
@@ -117,9 +103,9 @@ export const ClickupStartStopTimeButton = ({
             </RadixPopover.Trigger>
           </div>
 
-          {runningEntry && (
+          {values.runningEntry && isRunning && (
             <div className="absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full">
-              <ClickupCountUp runningEntry={runningEntry} />
+              <ClickupCountUp runningEntry={values.runningEntry} />
             </div>
           )}
         </div>
@@ -132,7 +118,7 @@ export const ClickupStartStopTimeButton = ({
         >
           <RadixPopover.Arrow className="fill-grey-800" />
 
-          {tags.map((tag) => (
+          {values.tags.map((tag) => (
             <button
               className="py-1 w-full px-4 text-center rounded-sm !text-grey-100 font-bold hover:bg-grey-100/10"
               onClick={handleTagClick.bind(null, tag)}

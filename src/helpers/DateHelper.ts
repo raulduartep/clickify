@@ -1,7 +1,9 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import duration from "dayjs/plugin/duration";
 
 dayjs.extend(utc);
+dayjs.extend(duration);
 
 export class DateHelper {
   static formattedDuration(start: string, end: string) {
@@ -27,6 +29,10 @@ export class DateHelper {
       diffFormatted,
       diffInSeconds: diff.asSeconds(),
     };
+  }
+
+  static formatDurationInSeconds(durationInSeconds: number) {
+    return dayjs.duration(durationInSeconds, "seconds").format("HH:mm:ss");
   }
 
   static autoCompleteTime(time: string) {
@@ -94,5 +100,17 @@ export class DateLocalHelper {
 
   static formatDate(date: string | Date) {
     return dayjs(date).toDate().toLocaleDateString().replace(/\//g, "-");
+  }
+
+  static formatUtcDateTimeToLocalFormattedTime(date: string | Date) {
+    return dayjs.utc(date).local().format("HH:mm");
+  }
+
+  static formatUtcDateTimeToLocalFormattedDate(date: string | Date) {
+    return dayjs.utc(date).toDate().toLocaleDateString().replace(/\//g, "-");
+  }
+
+  static formatUtcDateTimeToLocalDate(date: string | Date) {
+    return dayjs.utc(date).toDate();
   }
 }

@@ -2,12 +2,20 @@ export type TClockifyTimeEntryResponse = {
   id: string;
   description: string;
   billable: boolean;
+  isLocked: boolean;
+  kioskid: string;
+  projectId: string;
+  tagIds: string[];
+  taskId: string;
+  userId: string;
   timeInterval: {
     start: string;
     end: string;
     duration: string;
   };
   workspaceId: string;
+  type: string;
+  customFieldValues: any[];
 };
 
 export type TClockifyGetUserResponse = {
@@ -69,4 +77,38 @@ export type TClockifyGetAllTagsParams = {
 
 export type TClockifyProjectWithClickupList = TClockifyGetProjectResponse & {
   clickupListNames: string[];
+};
+
+export type TClockifyGetAllEntriesByTaskId = {
+  apiKey: string;
+  workspaceId: string;
+  userId: string;
+  taskId: string;
+};
+
+export type TClockifyEditTimeEntryBodyParam = {
+  end: string;
+  start: string;
+  description: string;
+  projectId: string;
+  tagIds: string[];
+  taskId: string;
+  customFields: any[];
+};
+
+export type TClockifyEditTimeEntryParams = {
+  id: string;
+  config: {
+    apiKey: string;
+    workspaceId: string;
+  };
+  body: TClockifyEditTimeEntryBodyParam;
+};
+
+export type TClockifyDeleteTimeEntryParams = {
+  config: {
+    apiKey: string;
+    workspaceId: string;
+  };
+  id: string;
 };

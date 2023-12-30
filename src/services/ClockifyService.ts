@@ -1,18 +1,21 @@
-import { TClockifyCreateNewTimeEntryParams, TClockifyGetAllProjectsParams, TClockifyGetAllTagsParams, TClockifyGetLastTimeEntryParams, TClockifyGetProjectResponse, TClockifyGetTagResponse, TClockifyGetUserResponse, TClockifyStopRunningTimeEntryParams, TClockifyTimeEntryResponse } from "../@types/services";
+import {
+  TClockifyCreateNewTimeEntryParams,
+  TClockifyDeleteTimeEntryParams,
+  TClockifyEditTimeEntryParams,
+  TClockifyGetAllEntriesByTaskId,
+  TClockifyGetAllProjectsParams,
+  TClockifyGetAllTagsParams,
+  TClockifyGetLastTimeEntryParams,
+  TClockifyGetProjectResponse,
+  TClockifyGetTagResponse,
+  TClockifyGetUserResponse,
+  TClockifyStopRunningTimeEntryParams,
+  TClockifyTimeEntryResponse,
+} from "../@types/services";
 
 export class ClockifyService {
   private static buildUrl(path: string) {
     return `https://api.clockify.me/api/v1/${path}`;
-  }
-
-  private static buildTimeEntry(data: any): TClockifyTimeEntryResponse {
-    return {
-      billable: data.billable,
-      description: data.description,
-      id: data.id,
-      timeInterval: data.timeInterval,
-      workspaceId: data.workspaceId,
-    }
   }
 
   static async createNewTimeEntry({
@@ -35,9 +38,7 @@ export class ClockifyService {
       throw new Error("Error creating time entry");
     }
 
-    const data = await response.json();
-
-    return this.buildTimeEntry(data);
+    return await response.json();
   }
 
   static async stopRunningTimeEntry({
@@ -46,7 +47,9 @@ export class ClockifyService {
     body,
   }: TClockifyStopRunningTimeEntryParams): Promise<TClockifyTimeEntryResponse> {
     const response = await fetch(
-      this.buildUrl(`workspaces/${config.workspaceId}/user/${userId}/time-entries`),
+      this.buildUrl(
+        `workspaces/${config.workspaceId}/user/${userId}/time-entries`
+      ),
       {
         method: "PATCH",
         body: JSON.stringify(body),
@@ -61,8 +64,31 @@ export class ClockifyService {
       throw new Error("Error updating time entry");
     }
 
-    const data = await response.json();
-    return this.buildTimeEntry(data);
+    return await response.json();
+  }
+
+  static async editTimeEntry({
+    id,
+    config,
+    body,
+  }: TClockifyEditTimeEntryParams): Promise<TClockifyTimeEntryResponse> {
+    const response = await fetch(
+      this.buildUrl(`workspaces/${config.workspaceId}/time-entries/${id}`),
+      {
+        method: "PUT",
+        body: JSON.stringify(body),
+        headers: {
+          "X-Api-Key": config.apiKey,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Error updating time entry");
+    }
+
+    return await response.json();
   }
 
   static async getUser(apiKey: string): Promise<TClockifyGetUserResponse> {
@@ -92,7 +118,9 @@ export class ClockifyService {
     workspaceId,
   }: TClockifyGetLastTimeEntryParams): Promise<TClockifyTimeEntryResponse> {
     const response = await fetch(
-      this.buildUrl(`workspaces/${workspaceId}/user/${userId}/time-entries?page-size=1`),
+      this.buildUrl(
+        `workspaces/${workspaceId}/user/${userId}/time-entries?page-size=1`
+      ),
       {
         method: "GET",
         headers: {
@@ -107,7 +135,7 @@ export class ClockifyService {
     }
 
     const data = await response.json();
-    return this.buildTimeEntry(data[0]);
+    return data[0];
   }
 
   static async getAllProjects({
@@ -129,7 +157,7 @@ export class ClockifyService {
       throw new Error("Error getting all projects");
     }
 
-    const data = await response.json()
+    const data = await response.json();
     return data.map((item: any) => ({
       id: item.id,
       name: item.name,
@@ -141,7 +169,7 @@ export class ClockifyService {
     workspaceId,
   }: TClockifyGetAllTagsParams): Promise<TClockifyGetTagResponse[]> {
     const response = await fetch(
-      `https://api.clockify.me/api/v1/workspaces/${workspaceId}/tags?archived=false`,
+      this.buildUrl(`workspaces/${workspaceId}/tags?archived=false`),
       {
         method: "GET",
         headers: {
@@ -155,11 +183,53 @@ export class ClockifyService {
       throw new Error("Error getting all tags");
     }
 
-    const data = await response.json()
+    const data = await response.json();
     return data.map((item: any) => ({
       id: item.id,
       name: item.name,
     }));
   }
-}
 
+  static async getAllEntriesByTaskId({
+    apiKey,
+    taskId,
+    workspaceId,
+    userId,
+  }: TClockifyGetAllEntriesByTaskId): Promise<TClockifyTimeEntryResponse[]> {
+    const response = await fetch(
+      this.buildUrl(
+        `workspaces/${workspaceId}/user/${userId}/time-entries?description=${taskId}`
+      ),
+      {
+        method: "GET",
+        headers: {
+          "X-Api-Key": apiKey,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Error getting all entries");
+    }
+
+    return await response.json();
+  }
+
+  static async deleteTimeEntry({ config, id }: TClockifyDeleteTimeEntryParams) {
+    const response = await fetch(
+      this.buildUrl(`workspaces/${config.workspaceId}/time-entries/${id}`),
+      {
+        method: "DELETE",
+        headers: {
+          "X-Api-Key": config.apiKey,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Error delete entry");
+    }
+  }
+}

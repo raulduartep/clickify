@@ -1,6 +1,6 @@
-import { IconLoader2 } from "@tabler/icons-react";
 import { ComponentProps } from "react";
 import { StyleHelper } from "../helpers/StyleHelper";
+import { Loader } from "./Loader";
 
 type TProps = {
   variant?: "contained" | "outlined";
@@ -11,16 +11,16 @@ type TProps = {
 
 const ContainedButton = ({
   label,
-  loading,
+  loading = false,
   className,
-  disabled,
+  disabled = false,
   flat = false,
   ...props
 }: TProps) => {
   return (
     <button
       className={StyleHelper.mergeStyles(
-        "flex text-xs justify-center items-center rounded-sm bg-brand text-grey-100 font-bold transition-colors",
+        "flex text-xs justify-center items-center rounded-sm bg-brand !text-grey-100 font-bold transition-colors",
         "aria-[disabled=false]:hover:bg-brand/90 cursor-pointer",
         "aria-[disabled=true]:cursor-not-allowed aria-[disabled=true]:opacity-50",
         {
@@ -34,11 +34,7 @@ const ContainedButton = ({
       disabled={loading || disabled}
       {...props}
     >
-      {loading ? (
-        <IconLoader2 className="w-4 h-4 stroke-grey-100 animate-spin" />
-      ) : (
-        label
-      )}
+      {loading ? <Loader /> : label}
     </button>
   );
 };
@@ -46,15 +42,15 @@ const ContainedButton = ({
 const OutlinedButton = ({
   label,
   className,
-  loading,
-  disabled,
+  loading = false,
+  disabled = false,
   flat = false,
   ...props
 }: TProps) => {
   return (
     <button
       className={StyleHelper.mergeStyles(
-        "flex justify-center items-center rounded-sm border border-brand text-brand font-bold transition-colors",
+        "flex justify-center items-center rounded-sm border border-brand !text-brand font-bold transition-colors",
         "aria-[disabled=false]:hover:bg-brand/20",
         "aria-[disabled=true]:cursor-not-allowed aria-[disabled=true]:opacity-50",
         {
@@ -67,11 +63,7 @@ const OutlinedButton = ({
       disabled={loading || disabled}
       {...props}
     >
-      {loading ? (
-        <IconLoader2 className="w-4 h-4 stroke-brand animate-spin" />
-      ) : (
-        label
-      )}
+      {loading ? <Loader className="stroke-brand" /> : label}
     </button>
   );
 };

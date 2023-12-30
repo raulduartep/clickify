@@ -2,6 +2,7 @@ import * as RadixPopover from "@radix-ui/react-popover";
 import { IconCalendar } from "@tabler/icons-react";
 import { useState } from "react";
 import { DayPicker } from "react-day-picker";
+import { IconButton } from "./IconButton";
 
 type TProps = {
   onChangeValue?(value: Date): void;
@@ -21,9 +22,7 @@ export const ClickupDatePicker = ({ onChangeValue, value }: TProps) => {
   return (
     <RadixPopover.Root open={isOpen} onOpenChange={setIsOpen}>
       <RadixPopover.Trigger asChild>
-        <button className="h-7 min-w-[1.75rem] rounded-md flex items-center justify-center bg-grey-600 hover:bg-grey-600/80">
-          <IconCalendar className="w-4 h-4 text-grey-100" />
-        </button>
+        <IconButton icon={<IconCalendar />} />
       </RadixPopover.Trigger>
 
       <RadixPopover.Content
