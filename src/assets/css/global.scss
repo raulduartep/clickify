@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Karla:wght@400;500;600;700&display=swap');
+
+#clickify-extension-root {
+  *::-webkit-scrollbar {
+    width: 16px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: theme('colors.grey.600');
+    border-radius: 16px;
+    border: 6px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: theme('colors.grey.500');
+  }
+
+  * {
+    color: inherit;
+  }
+}
