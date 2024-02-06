@@ -2,10 +2,12 @@ import { cloneElement, ComponentProps, forwardRef } from 'react'
 
 import { StyleHelper } from '@helpers/style'
 
+type TIconButtonColorScheme = 'brand' | 'gray'
+
 type TProps = {
   icon: JSX.Element
   size?: 'xs' | 'lg'
-  colorScheme?: 'brand' | 'gray'
+  colorScheme?: TIconButtonColorScheme
 } & ComponentProps<'button'>
 
 export const IconButton = forwardRef<HTMLButtonElement, TProps>(
@@ -14,9 +16,10 @@ export const IconButton = forwardRef<HTMLButtonElement, TProps>(
     return (
       <button
         aria-disabled={disabled}
+        disabled={disabled}
         className={StyleHelper.mergeStyles(
-          'flex items-center justify-center ',
-          'aria-[disabled=true]:cursor-not-allowed aria-[disabled=true]:opacity-50 ',
+          'flex items-center justify-center',
+          'aria-[disabled=true]:cursor-not-allowed aria-[disabled=true]:opacity-40 ',
           {
             'min-w-[1rem] max-w-[1rem] min-h-[1rem] max-h-[1rem] rounded-sm': size === 'xs',
             'min-w-[1.5rem] max-w-[1.5rem] min-h-[1.5rem] max-h-[1.5rem] rounded-md': size === 'lg',

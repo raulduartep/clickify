@@ -28,8 +28,7 @@
       ],
       "js": [
         "src/clockify-content-script.tsx"
-      ],
-      "run_at": "document_end"
+      ]
     }
   ],
   "permissions": [

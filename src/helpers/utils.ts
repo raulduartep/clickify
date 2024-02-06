@@ -25,4 +25,12 @@ export class UtilsHelper {
   static sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
+
+  static extractFirstLetters(str: string) {
+    return str
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase();
+  }
 }

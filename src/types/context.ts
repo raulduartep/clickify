@@ -30,11 +30,13 @@ export type TStorageContextValues = {
   apiKey: string | null
   user: TClockifyGetUserResponse | null
   projects: TClockifyProjectWithClickupList[] | null
+  isFirstTime: boolean | null
 }
 
 export type TStorageContextData = {
   values: TStorageContextValues
   hasAllValues: boolean
+  isLoaded: boolean
   setStorage: (partialValues: Partial<TStorageContextValues>) => Promise<void>
   getStorage: () => Promise<TStorageContextValues>
 }

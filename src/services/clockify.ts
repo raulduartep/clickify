@@ -170,7 +170,7 @@ export class ClockifyService {
 
   static async getAllTags({
     apiKey,
-    workspaceId,
+    workspaceId
   }: TClockifyGetAllTagsParams): Promise<TClockifyGetTagResponse[]> {
     const response = await fetch(
       this.buildUrl(`workspaces/${workspaceId}/tags?archived=false`),
@@ -199,11 +199,13 @@ export class ClockifyService {
     workspaceId,
     userId,
     page,
-    description
+    description,
+    inProgress
   }: TClockifyGetEntriesParams): Promise<TClockifyTimeEntryResponse[]> {
     const params = queryString.stringify({
       page,
-      description
+      description,
+      "in-progress": inProgress
     })
 
     const response = await fetch(

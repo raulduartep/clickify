@@ -1,4 +1,4 @@
-import { ComponentProps } from 'react'
+import { cloneElement, ComponentProps } from 'react'
 
 import { StyleHelper } from '@helpers/style'
 
@@ -8,19 +8,33 @@ type TProps = {
   variant?: 'contained' | 'outlined'
   label: string
   loading?: boolean
-  flat?: boolean
+  leftIcon?: JSX.Element
+  colorSchema?: 'brand' | 'red'
 } & ComponentProps<'button'>
 
-const ContainedButton = ({ label, loading = false, className, disabled = false, flat = false, ...props }: TProps) => {
+const ContainedButton = ({
+  label,
+  loading = false,
+  className,
+  disabled = false,
+  leftIcon,
+  colorSchema,
+  ...props
+}: TProps) => {
+  const { className: leftIconClassName = '', ...leftIconProps } = leftIcon ? leftIcon.props : {}
+
+  const buildIconClassName = (className: string) => {
+    return StyleHelper.mergeStyles('object-contain group-aria-[disabled=true]:fill-gray-100/50 w-4 h-4', className)
+  }
+
   return (
     <button
       className={StyleHelper.mergeStyles(
-        'flex justify-center items-center rounded-sm bg-brand !text-grey-100 font-bold transition-colors',
-        'aria-[disabled=false]:hover:bg-brand/90 cursor-pointer',
+        'flex justify-center items-center min-h-[1.75rem] gap-1.5 px-3 text-xs rounded-sm  !text-grey-100 font-bold transition-colors cursor-pointer',
         'aria-[disabled=true]:cursor-not-allowed aria-[disabled=true]:opacity-50',
         {
-          'min-h-[2.5rem] px-4 text-sm': !flat,
-          'min-h-[1.75rem] px-3 text-xs': flat,
+          'bg-red-500 aria-[disabled=false]:hover:bg-red-500/90': colorSchema === 'red',
+          'bg-brand aria-[disabled=false]:hover:bg-brand/90': colorSchema === 'brand',
         },
         className
       )}
@@ -29,33 +43,63 @@ const ContainedButton = ({ label, loading = false, className, disabled = false, 
       disabled={loading || disabled}
       {...props}
     >
-      {loading ? <Loader /> : label}
+      {loading ? (
+        <Loader />
+      ) : (
+        <>
+          {leftIcon &&
+            cloneElement(leftIcon, {
+              className: buildIconClassName(leftIconClassName),
+              ...leftIconProps,
+            })}
+
+          <span className={StyleHelper.mergeStyles('font-medium whitespace-nowrap')}>{label}</span>
+        </>
+      )}
     </button>
   )
 }
 
-const OutlinedButton = ({ label, className, loading = false, disabled = false, flat = false, ...props }: TProps) => {
+const OutlinedButton = ({ label, className, loading = false, disabled = false, leftIcon, ...props }: TProps) => {
+  const { className: leftIconClassName = '', ...leftIconProps } = leftIcon ? leftIcon.props : {}
+
+  const buildIconClassName = (className: string) => {
+    return StyleHelper.mergeStyles('object-contain group-aria-[disabled=true]:fill-gray-100/50 w-5 h-5', className)
+  }
+
   return (
     <button
       className={StyleHelper.mergeStyles(
-        'flex justify-center items-center rounded-sm border border-brand !text-brand font-bold transition-colors',
+        'flex justify-center items-center rounded-sm border min-h-[1.75rem] px-3 text-xs border-brand !text-brand font-bold transition-colors',
         'aria-[disabled=false]:hover:bg-brand/20',
         'aria-[disabled=true]:cursor-not-allowed aria-[disabled=true]:opacity-50',
-        {
-          'min-h-[2.5rem] px-4 text-sm': !flat,
-          'min-h-[1.75rem] px-3 text-xs': flat,
-        },
         className
       )}
       aria-disabled={loading || disabled}
       disabled={loading || disabled}
       {...props}
     >
-      {loading ? <Loader className="stroke-brand" /> : label}
+      {loading ? (
+        <Loader className="stroke-brand" />
+      ) : (
+        <>
+          {leftIcon &&
+            cloneElement(leftIcon, {
+              className: buildIconClassName(leftIconClassName),
+              ...leftIconProps,
+            })}
+
+          <span className={StyleHelper.mergeStyles('font-medium whitespace-nowrap')}>{label}</span>
+        </>
+      )}
     </button>
   )
 }
 
-export const Button = ({ variant = 'contained', ...props }: TProps) => {
-  return variant === 'contained' ? <ContainedButton {...props} /> : <OutlinedButton {...props} />
+export const Button = ({ variant = 'contained', colorSchema = 'brand', ...props }: TProps) => {
+  return variant === 'contained' ? (
+    <ContainedButton colorSchema={colorSchema} {...props} />
+  ) : (
+    <OutlinedButton {...props} />
+  )
 }

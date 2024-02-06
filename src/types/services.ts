@@ -1,12 +1,8 @@
 export type TClockifyTimeEntryResponse = {
   id: string;
   description: string;
-  billable: boolean;
-  isLocked: boolean;
-  kioskid: string;
   projectId: string;
-  tagIds: string[];
-  taskId: string;
+  tagIds: string[] | null;
   userId: string;
   timeInterval: {
     start: string;
@@ -14,14 +10,12 @@ export type TClockifyTimeEntryResponse = {
     duration: string;
   };
   workspaceId: string;
-  type: string;
-  customFieldValues: any[];
 };
 
 export type TClockifyGetUserResponse = {
   id: string;
   activeWorkspace: string;
-  profilePicture: string;
+  profilePicture?: string;
   name: string
 };
 
@@ -87,6 +81,7 @@ export type TClockifyGetEntriesParams = {
   userId: string;
   page?: number;
   description?: string;
+  inProgress?: boolean;
 };
 
 

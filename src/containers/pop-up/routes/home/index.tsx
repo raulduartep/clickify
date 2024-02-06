@@ -1,29 +1,29 @@
-import Logo from '@assets/images/icon.svg?react'
-import { EnvHelper } from '@helpers/env'
-import { StyleHelper } from '@helpers/style'
+import { Fragment, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { ListOfEntries } from './list-of-entries'
-import { UserAvatarButton } from './user-avatar-button'
+import { PopupHeader } from '@components/popup-header'
+import { useStorage } from '@hooks/use-storage'
 
-export const PopupHome = () => {
+import { ListOfLastEntries } from './list-of-last-entries'
+import { RunningEntryButton } from './running-entry-button'
+
+export const PopupHomePage = () => {
+  const { values, isLoaded } = useStorage()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!isLoaded || values.isFirstTime === false) return
+    navigate('/welcome')
+  }, [isLoaded, values.isFirstTime, navigate])
   return (
-    <div
-      id="clickify-extension-root"
-      className={StyleHelper.mergeStyles({
-        'w-screen h-screen flex justify-center items-center bg-grey-900 text-gray-100': EnvHelper.DEV,
-      })}
-    >
-      <div className="min-w-[400px] max-w-[400px] min-h-[600px] max-h-[600px] bg-grey-800 rounded-lg py-5 flex flex-col">
-        <header className="flex justify-between px-6 pb-4 border-b-2 border-grey-600 items-center">
-          <Logo />
+    <Fragment>
+      <PopupHeader withBackButton={false} />
 
-          <div className="flex">
-            <UserAvatarButton />
-          </div>
-        </header>
+      <main className="px-6 py-4 flex flex-col min-h-0 flex-grow">
+        {!!values.runningEntry && <RunningEntryButton runningEntry={values.runningEntry} />}
 
-        <ListOfEntries />
-      </div>
-    </div>
+        <ListOfLastEntries />
+      </main>
+    </Fragment>
   )
 }

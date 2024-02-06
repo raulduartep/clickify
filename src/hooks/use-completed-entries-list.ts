@@ -5,9 +5,9 @@ import { ClockifyService } from '@services/clockify'
 
 import { useStorage } from './use-storage'
 
-export const USE_ENTRIES_LIST_QUERY_KEY = 'entries-list'
+export const USE_COMPLETED_ENTRIES_LIST_QUERY_KEY = 'completed-entries-list'
 
-export const useEntriesList = () => {
+export const useCompletedEntriesList = () => {
   const { getStorage } = useStorage()
 
   const list = useCallback(async (page = 1) => {
@@ -19,7 +19,8 @@ export const useEntriesList = () => {
       apiKey: values.apiKey,
       workspaceId: values.user.activeWorkspace,
       userId: values.user.id,
-      page
+      page,
+      inProgress: false
     })
 
     return {
@@ -29,12 +30,9 @@ export const useEntriesList = () => {
   }, [getStorage])
 
   const query = useInfiniteQuery({
-    queryKey: [USE_ENTRIES_LIST_QUERY_KEY],
+    queryKey: [USE_COMPLETED_ENTRIES_LIST_QUERY_KEY],
     queryFn: ({ pageParam }) => list(pageParam),
     getNextPageParam: (lastPage) => lastPage.page + 1,
-    refetchOnWindowFocus: false,
-    staleTime: Infinity,
-
   })
 
   return query
