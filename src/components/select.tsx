@@ -102,7 +102,7 @@ const Item = forwardRef<ElementRef<typeof SelectPrimitive.Item>, ComponentPropsW
     <SelectPrimitive.Item
       ref={ref}
       className={StyleHelper.mergeStyles(
-        'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 text-sm outline-none focus:bg-grey-600 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>span]:max-w-[calc(var(--radix-popper-anchor-width)-3rem)] [&>span]:truncate',
+        'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 text-sm outline-none focus:bg-grey-600 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>span]:max-w-[calc(var(--radix-popper-anchor-width)-2.5rem)] [&>span]:truncate',
         className
       )}
       {...props}

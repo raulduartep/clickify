@@ -30,7 +30,7 @@ const ContainedButton = ({
   return (
     <button
       className={StyleHelper.mergeStyles(
-        'flex justify-center items-center min-h-[1.75rem] gap-1.5 px-3 text-xs rounded-sm  !text-grey-100 font-bold transition-colors cursor-pointer',
+        'flex justify-center items-center min-h-[1.75rem] gap-1.5 px-3 text-sm rounded !text-grey-100 font-bold transition-colors cursor-pointer',
         'aria-[disabled=true]:cursor-not-allowed aria-[disabled=true]:opacity-50',
         {
           'bg-red-500 aria-[disabled=false]:hover:bg-red-500/90': colorSchema === 'red',
@@ -70,7 +70,7 @@ const OutlinedButton = ({ label, className, loading = false, disabled = false, l
   return (
     <button
       className={StyleHelper.mergeStyles(
-        'flex justify-center items-center rounded-sm border min-h-[1.75rem] px-3 text-xs border-brand !text-brand font-bold transition-colors',
+        'flex justify-center items-center rounded border min-h-[1.75rem] px-3 text-sm border-brand !text-brand font-bold transition-colors',
         'aria-[disabled=false]:hover:bg-brand/20',
         'aria-[disabled=true]:cursor-not-allowed aria-[disabled=true]:opacity-50',
         className

@@ -7,9 +7,17 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import manifest from './manifest.json'
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react(), crx({ manifest }), tsconfigPaths(), svgr()],
-  server: {
-    port: 5174,
-  },
+export default defineConfig(({ mode }) => {
+  const plugins = [react(), tsconfigPaths(), svgr()]
+
+  if (mode === 'production') {
+    plugins.push(crx({ manifest }))
+  }
+
+  return {
+    plugins,
+    server: {
+      port: 5174,
+    },
+  }
 })

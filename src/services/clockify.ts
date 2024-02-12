@@ -20,6 +20,18 @@ export class ClockifyService {
     return `https://api.clockify.me/api/v1/${path}`;
   }
 
+  private static buildTimeEntry(entry: any): TClockifyTimeEntryResponse {
+    return {
+      id: entry.id,
+      description: entry.description,
+      projectId: entry.projectId ?? undefined,
+      tagId: entry.tagIds ? entry.tagIds[0] : undefined,
+      timeInterval: entry.timeInterval,
+      userId: entry.userId,
+      workspaceId: entry.workspaceId,
+    };
+  }
+
   static async createNewTimeEntry({
     body,
     config,
@@ -40,7 +52,8 @@ export class ClockifyService {
       throw new Error("Error creating time entry");
     }
 
-    return await response.json();
+    const data = await response.json();
+    return this.buildTimeEntry(data);
   }
 
   static async stopRunningTimeEntry({
@@ -66,7 +79,8 @@ export class ClockifyService {
       throw new Error("Error updating time entry");
     }
 
-    return await response.json();
+    const data = await response.json();
+    return this.buildTimeEntry(data);
   }
 
   static async editTimeEntry({
@@ -90,7 +104,8 @@ export class ClockifyService {
       throw new Error("Error updating time entry");
     }
 
-    return await response.json();
+    const data = await response.json();
+    return this.buildTimeEntry(data);
   }
 
   static async getUser(apiKey: string): Promise<TClockifyGetUserResponse> {
@@ -139,7 +154,7 @@ export class ClockifyService {
     }
 
     const data = await response.json();
-    return data[0];
+    return this.buildTimeEntry(data[0]);
   }
 
   static async getAllProjects({
@@ -225,7 +240,8 @@ export class ClockifyService {
       throw new Error("Error getting all entries");
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data.map(this.buildTimeEntry);
   }
 
   static async deleteTimeEntry({ config, id }: TClockifyDeleteTimeEntryParams) {

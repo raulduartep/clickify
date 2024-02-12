@@ -12,7 +12,6 @@ type Props = {
 }
 
 export const TableOfEntries = memo(({ date, entries }: Props) => {
-  console.log(entries[0])
   const duration = entries.reduce((acc, entry) => {
     return acc + DateHelper.durationInSeconds(entry.timeInterval.start, entry.timeInterval.end)
   }, 0)

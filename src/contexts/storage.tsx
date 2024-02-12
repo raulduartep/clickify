@@ -8,17 +8,30 @@ export const StorageContext = createContext({} as TStorageContextData)
 export const StorageProvider = ({ children }: TStorageProviderProps) => {
   const [isLoaded, setIsLoaded] = useState<boolean>(false)
   const [values, setValues] = useState<TStorageContextValues>({
-    tags: null,
-    apiKey: null,
-    projects: null,
-    user: null,
-    runningEntry: null,
-    isFirstTime: null,
+    tags: undefined,
+    apiKey: undefined,
+    projects: undefined,
+    user: undefined,
+    runningEntry: undefined,
+    isFirstTime: undefined,
   })
 
   const hasAllValues = useMemo(() => {
     return !!(values.apiKey && values.user && values.projects && values.tags && values.isFirstTime !== null)
   }, [values])
+
+  const removeStorage = useCallback(async (keys: keyof TStorageContextValues | (keyof TStorageContextValues)[]) => {
+    await StorageHelper.remove(keys)
+
+    setValues(prev => {
+      const allKeys = Array.isArray(keys) ? keys : [keys]
+      allKeys.forEach(key => {
+        prev[key] = undefined
+      })
+
+      return prev
+    })
+  }, [])
 
   const setStorage = useCallback(async (partialValues: Partial<TStorageContextValues>) => {
     await StorageHelper.set(partialValues)
@@ -55,7 +68,7 @@ export const StorageProvider = ({ children }: TStorageProviderProps) => {
   }, [])
 
   return (
-    <StorageContext.Provider value={{ values, setStorage, getStorage, hasAllValues, isLoaded }}>
+    <StorageContext.Provider value={{ values, setStorage, getStorage, hasAllValues, isLoaded, removeStorage }}>
       {children}
     </StorageContext.Provider>
   )

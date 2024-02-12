@@ -12,7 +12,7 @@ import { ClockifyService } from '@services/clockify'
 export const ClockifyContext = createContext({} as TClockifyContextData)
 
 export const ClockifyProvider = ({ children, version }: TClockifyProviderProps) => {
-  const { values, setStorage } = useStorage()
+  const { values, setStorage, removeStorage } = useStorage()
   const queryClient = useQueryClient()
 
   const [runningSeconds, setRunningSeconds] = useState(0)
@@ -81,9 +81,9 @@ export const ClockifyProvider = ({ children, version }: TClockifyProviderProps) 
         },
       })
     } finally {
-      setStorage({ runningEntry: null })
+      removeStorage('runningEntry')
     }
-  }, [values.apiKey, values.user, setStorage])
+  }, [values.apiKey, values.user, removeStorage])
 
   const addManualEntry = useCallback(
     async (start: string, end: string) => {

@@ -5,7 +5,12 @@ class ExtensionStorageHelper {
     key: string | string[]
   ): Promise<T> {
     const storage = await chrome.storage.local.get(key);
-    return storage as T;
+    const values = Object.entries(storage).reduce((acc, [key, value]) => {
+      acc[key] = value ?? undefined;
+      return acc;
+    }, {} as Record<string, any>);
+
+    return values as T;
   }
 
   static async set(data: Record<string, any>): Promise<void> {
@@ -24,7 +29,7 @@ class ExtensionStorageHelper {
       if (areaName !== "local") return;
 
       const newValues = Object.entries(changes).reduce((acc, [key, value]) => {
-        acc[key] = value.newValue;
+        acc[key] = value.newValue ?? undefined;
         return acc;
       }, {} as Record<string, any>);
 
@@ -47,7 +52,7 @@ class WindowStorageHelper {
 
     const storage = keys.reduce((acc, key) => {
       const value = window.localStorage.getItem(key);
-      acc[key] = value ? JSON.parse(value) : null;
+      acc[key] = value ? JSON.parse(value) : undefined;
       return acc;
     }, {} as Record<string, any>);
 

@@ -10,16 +10,13 @@ import { TClockifyTimeEntryResponse } from '@interfaces/services'
 
 type Props = {
   entry: TClockifyTimeEntryResponse
-  isRunning?: boolean
-  customDuration?: JSX.Element
 }
 
-export const TableRowOfEntry = ({ entry, isRunning = false, customDuration }: Props) => {
+export const TableRowOfEntry = ({ entry }: Props) => {
   const { values } = useStorage()
 
-  const tagId = entry.tagIds !== null ? entry.tagIds[0] : undefined
-  const project = values.projects?.find(project => project.id === entry.projectId)
-  const tag = tagId ? values.tags?.find(tag => tag.id === tagId) : undefined
+  const project = entry.projectId ? values.projects?.find(project => project.id === entry.projectId) : undefined
+  const tag = entry.tagId ? values.tags?.find(tag => tag.id === entry.tagId) : undefined
   const duration = DateHelper.formatDurationInSeconds(
     DateHelper.durationInSeconds(entry.timeInterval.start, entry.timeInterval.end)
   )
@@ -31,9 +28,7 @@ export const TableRowOfEntry = ({ entry, isRunning = false, customDuration }: Pr
           <p className="truncate">{entry.description}</p>
         </Tooltip>
       </Table.Cell>
-      <Table.Cell className={StyleHelper.mergeStyles('w-[4.4rem]', { 'text-red-500': isRunning })}>
-        {customDuration ?? duration}
-      </Table.Cell>
+      <Table.Cell className={StyleHelper.mergeStyles('w-[4.4rem]')}>{duration}</Table.Cell>
       <Table.Cell className="w-[4.2rem]">
         <div className="flex gap-0.5">
           <Tooltip content={project?.name} delay={200}>

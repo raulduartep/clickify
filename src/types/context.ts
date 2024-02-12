@@ -25,12 +25,12 @@ export type TClockifyProviderProps = {
 }
 
 export type TStorageContextValues = {
-  tags: TClockifyGetTagResponse[] | null
-  runningEntry: TClockifyTimeEntryResponse | null
-  apiKey: string | null
-  user: TClockifyGetUserResponse | null
-  projects: TClockifyProjectWithClickupList[] | null
-  isFirstTime: boolean | null
+  tags?: TClockifyGetTagResponse[]
+  runningEntry?: TClockifyTimeEntryResponse
+  apiKey?: string
+  user?: TClockifyGetUserResponse
+  projects?: TClockifyProjectWithClickupList[]
+  isFirstTime?: boolean
 }
 
 export type TStorageContextData = {
@@ -39,6 +39,7 @@ export type TStorageContextData = {
   isLoaded: boolean
   setStorage: (partialValues: Partial<TStorageContextValues>) => Promise<void>
   getStorage: () => Promise<TStorageContextValues>
+  removeStorage: (keys: keyof TStorageContextValues | (keyof TStorageContextValues)[]) => Promise<void>
 }
 
 export type TStorageProviderProps = {

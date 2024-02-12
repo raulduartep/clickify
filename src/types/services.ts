@@ -1,8 +1,8 @@
 export type TClockifyTimeEntryResponse = {
   id: string;
   description: string;
-  projectId: string;
-  tagIds: string[] | null;
+  projectId?: string;
+  tagId?: string;
   userId: string;
   timeInterval: {
     start: string;

@@ -2,7 +2,7 @@ import { cloneElement, ComponentProps, forwardRef } from 'react'
 
 import { StyleHelper } from '@helpers/style'
 
-type TIconButtonColorScheme = 'brand' | 'gray'
+type TIconButtonColorScheme = 'brand' | 'gray' | 'red'
 
 type TProps = {
   icon: JSX.Element
@@ -25,6 +25,7 @@ export const IconButton = forwardRef<HTMLButtonElement, TProps>(
             'min-w-[1.5rem] max-w-[1.5rem] min-h-[1.5rem] max-h-[1.5rem] rounded-md': size === 'lg',
             'text-brand aria-[disabled=false]:hover:bg-brand/20': colorScheme === 'brand',
             'text-grey-500 aria-[disabled=false]:hover:bg-grey-500/20': colorScheme === 'gray',
+            'text-red-500 aria-[disabled=false]:hover:bg-red-500/20': colorScheme === 'red',
           },
           className
         )}
