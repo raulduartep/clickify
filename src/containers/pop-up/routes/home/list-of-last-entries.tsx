@@ -63,7 +63,9 @@ export const ListOfLastEntries = () => {
             <TableOfEntries key={date} date={date} entries={entries} />
           ))}
 
-          <Button label="Load more" className="mt-2" onClick={handleNextPage} loading={isFetchingNextPage} />
+          <Button className="mt-2" onClick={handleNextPage} loading={isFetchingNextPage}>
+            Load more
+          </Button>
         </ul>
       )}
     </div>

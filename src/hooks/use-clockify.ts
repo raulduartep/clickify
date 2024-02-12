@@ -87,8 +87,42 @@ export const useClockify = () => {
     }
   }, [values.apiKey, values.user, removeStorage, queryClient, values.runningEntry])
 
+  const deleteTimeEntry = useCallback(
+    async (id: string) => {
+      if (!values.apiKey || !values.user) {
+        throw new Error('API Key or User not found. You need to open the extension popup and set your API Key.')
+      }
+
+      await ClockifyService.deleteTimeEntry({
+        id,
+        config: {
+          apiKey: values.apiKey,
+          workspaceId: values.user.activeWorkspace,
+        },
+      })
+
+      if (values.runningEntry?.id === id) {
+        removeStorage("runningEntry")
+      }
+
+      queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY], (data: any) => {
+        if (!data) return
+
+        return {
+          ...data,
+          pages: data.pages.map((page: any) => ({
+            ...page,
+            data: page.data.filter((entry: any) => entry.id !== id),
+          })),
+        }
+      })
+    },
+    [values.apiKey, values.user, queryClient, removeStorage, values.runningEntry]
+  )
+
   return {
     playEntry,
-    stopEntry
+    stopEntry,
+    deleteTimeEntry
   }
 };

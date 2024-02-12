@@ -36,7 +36,9 @@ export const PopupUpdateApiPage = () => {
 
         <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
           <Input label="YOUR API KEY" name="api-key" value={apiKey} onChange={handleApiKeyChange} />
-          <Button colorSchema="red" label="Update" type="submit" loading={fetching} />
+          <Button colorSchema="red" type="submit" loading={fetching}>
+            Update
+          </Button>
         </form>
       </div>
     </Fragment>

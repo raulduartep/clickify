@@ -6,19 +6,18 @@ import { Loader } from './loader'
 
 type TProps = {
   variant?: 'contained' | 'outlined'
-  label: string
   loading?: boolean
   leftIcon?: JSX.Element
   colorSchema?: 'brand' | 'red'
 } & ComponentProps<'button'>
 
 const ContainedButton = ({
-  label,
   loading = false,
   className,
   disabled = false,
   leftIcon,
   colorSchema,
+  children,
   ...props
 }: TProps) => {
   const { className: leftIconClassName = '', ...leftIconProps } = leftIcon ? leftIcon.props : {}
@@ -53,14 +52,14 @@ const ContainedButton = ({
               ...leftIconProps,
             })}
 
-          <span className={StyleHelper.mergeStyles('font-medium whitespace-nowrap')}>{label}</span>
+          <span className={StyleHelper.mergeStyles('font-medium whitespace-nowrap')}>{children}</span>
         </>
       )}
     </button>
   )
 }
 
-const OutlinedButton = ({ label, className, loading = false, disabled = false, leftIcon, ...props }: TProps) => {
+const OutlinedButton = ({ children, className, loading = false, disabled = false, leftIcon, ...props }: TProps) => {
   const { className: leftIconClassName = '', ...leftIconProps } = leftIcon ? leftIcon.props : {}
 
   const buildIconClassName = (className: string) => {
@@ -89,7 +88,7 @@ const OutlinedButton = ({ label, className, loading = false, disabled = false, l
               ...leftIconProps,
             })}
 
-          <span className={StyleHelper.mergeStyles('font-medium whitespace-nowrap')}>{label}</span>
+          <span className={StyleHelper.mergeStyles('font-medium whitespace-nowrap')}>{children}</span>
         </>
       )}
     </button>

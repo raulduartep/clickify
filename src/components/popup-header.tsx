@@ -48,7 +48,7 @@ export const PopupHeader = ({ withBackButton = true }: TProps) => {
             <button
               className={StyleHelper.mergeStyles(
                 'h-10 w-10 rounded-full border-2 bg-brand/20 border-brand relative outline-none',
-                'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50',
+                'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 aria-[expanded=true]:border-brand-600',
                 {
                   'cursor-not-allowed opacity-50': !hasAllValues,
                   'group cursor-pointer transition-colors hover:border-brand-600': hasAllValues,
@@ -72,7 +72,7 @@ export const PopupHeader = ({ withBackButton = true }: TProps) => {
                 className={StyleHelper.mergeStyles(
                   'bg-brand p-0.5 w-min h-min rounded-full text-grey-100 absolute -right-1 -bottom-1 border-2 border-grey-800 group-data-[disabled]:group-hover:bg-brand',
                   {
-                    'transition-colors group-hover:bg-brand-600': hasAllValues,
+                    'transition-colors group-hover:bg-brand-600 group-aria-[expanded=true]:bg-brand-600': hasAllValues,
                   }
                 )}
               >

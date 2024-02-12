@@ -38,7 +38,9 @@ export const PopupWelcomePage = () => {
 
       <form className="flex flex-col gap-2 mt-4" onSubmit={handleSubmit}>
         <Input value={apiKey} onChange={handleApiKeyChange} label="YOUR API KEY" name="api-key" />
-        <Button label="Send" type="submit" loading={fetching} />
+        <Button type="submit" loading={fetching}>
+          Send
+        </Button>
       </form>
     </div>
   )
