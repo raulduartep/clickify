@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { IconBook2, IconDotsVertical, IconTag } from '@tabler/icons-react'
+import { TClockifyTimeEntry } from 'src/schemas/clockify'
 
 import { DropdownMenu } from '@components/dropdown-menu'
 import { IconButton } from '@components/icon-button'
@@ -7,24 +9,24 @@ import { Table } from '@components/table'
 import { Tooltip } from '@components/tolltip'
 import { DateHelper } from '@helpers/date'
 import { StyleHelper } from '@helpers/style'
-import { useClockify } from '@hooks/use-clockify'
+import { useClockifyEntryService } from '@hooks/use-clockify-entry-service'
 import { useStorage } from '@hooks/use-storage'
-import { TClockifyTimeEntryResponse } from '@interfaces/services'
 
 type Props = {
-  entry: TClockifyTimeEntryResponse
+  entry: TClockifyTimeEntry
 }
 
 export const TableRowOfEntry = ({ entry }: Props) => {
   const { values } = useStorage()
-  const { deleteTimeEntry } = useClockify()
+  const { deleteTimeEntry } = useClockifyEntryService()
+  const navigate = useNavigate()
 
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const project = entry.projectId ? values.projects?.find(project => project.id === entry.projectId) : undefined
   const tag = entry.tagId ? values.tags?.find(tag => tag.id === entry.tagId) : undefined
   const duration = DateHelper.formatDurationInSeconds(
-    DateHelper.durationInSeconds(entry.timeInterval.start, entry.timeInterval.end)
+    DateHelper.durationInSeconds(entry.timeInterval.end as string, entry.timeInterval.start)
   )
 
   const handleSelectDelete = (event: Event) => {
@@ -33,11 +35,15 @@ export const TableRowOfEntry = ({ entry }: Props) => {
   }
 
   const handleSelectDeleteConfirm = () => {
-    deleteTimeEntry(entry.id)
+    deleteTimeEntry(entry)
   }
 
   const handleDropdownOpenChange = () => {
     setConfirmDelete(false)
+  }
+
+  const handleEdit = () => {
+    navigate('/edit/', { state: { entry } })
   }
 
   return (
@@ -48,7 +54,7 @@ export const TableRowOfEntry = ({ entry }: Props) => {
         </Tooltip>
       </Table.Cell>
       <Table.Cell className={StyleHelper.mergeStyles('w-[4.4rem]')}>{duration}</Table.Cell>
-      <Table.Cell className="w-[3.5rem]">
+      <Table.Cell className="w-[4rem]">
         <div className="flex gap-0.5">
           <Tooltip content={project?.name} delay={200}>
             <IconButton icon={<IconBook2 />} colorScheme="gray" size="lg" disabled={!project?.name} />
@@ -59,13 +65,13 @@ export const TableRowOfEntry = ({ entry }: Props) => {
           </Tooltip>
         </div>
       </Table.Cell>
-      <Table.Cell className="w-[2.5rem]">
+      <Table.Cell className="w-[3rem]">
         <DropdownMenu.Root onOpenChange={handleDropdownOpenChange}>
           <DropdownMenu.Trigger asChild>
             <IconButton icon={<IconDotsVertical />} colorScheme="gray" size="lg" />
           </DropdownMenu.Trigger>
           <DropdownMenu.Content align="end">
-            <DropdownMenu.Item>Edit</DropdownMenu.Item>
+            <DropdownMenu.Item onSelect={handleEdit}>Edit</DropdownMenu.Item>
             <DropdownMenu.Separator />
             <DropdownMenu.Item
               className={StyleHelper.mergeStyles('transition-none', {
@@ -74,7 +80,7 @@ export const TableRowOfEntry = ({ entry }: Props) => {
               })}
               onSelect={confirmDelete ? handleSelectDeleteConfirm : handleSelectDelete}
             >
-              {confirmDelete ? 'Confirm ?' : 'Delete'}
+              {confirmDelete ? ' Are you sure ?' : 'Delete'}
             </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Root>

@@ -1,5 +1,6 @@
+import { TClockifyProject } from "src/schemas/clockify";
+
 import { TClickupVersion } from "@interfaces/clickup";
-import { TClockifyProjectWithClickupList } from "@interfaces/services";
 
 import { EnvHelper } from "./env";
 
@@ -105,7 +106,7 @@ export class ClickupHelper {
   }
 
   static getCurrentProject(
-    allProjects: TClockifyProjectWithClickupList[],
+    allProjects: TClockifyProject[],
     version: TClickupVersion
   ) {
     let clickupListNames: string[];
@@ -125,7 +126,7 @@ export class ClickupHelper {
     const foundProject = allProjects.find((project) => {
       return (
         clickupListNames.includes(project.name.toLowerCase()) ||
-        project.clickupListNames.some((name) =>
+        project.listNames.some((name) =>
           clickupListNames.includes(name.toLowerCase())
         )
       );

@@ -1,17 +1,16 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from 'react'
+import { TClockifyTimeEntry } from 'src/schemas/clockify'
 
-import { DateHelper } from "@helpers/date"
-import { TClockifyTimeEntryResponse } from "@interfaces/services"
+import { DateHelper } from '@helpers/date'
 
-export const useEntryCountUp = (entry?: TClockifyTimeEntryResponse | null) => {
-
+export const useEntryCountUp = (entry?: TClockifyTimeEntry) => {
   const [runningSeconds, setRunningSeconds] = useState(0)
 
   useEffect(() => {
     if (!entry) return
 
     const calculateSeconds = () => {
-      const duration = DateHelper.durationInSeconds(entry.timeInterval.start)
+      const duration = DateHelper.durationInSeconds(new Date(), entry.timeInterval.start)
       setRunningSeconds(duration)
     }
 
@@ -39,5 +38,4 @@ export const useEntryCountUp = (entry?: TClockifyTimeEntryResponse | null) => {
   }, [entry])
 
   return runningSeconds
-
 }

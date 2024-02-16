@@ -9,15 +9,17 @@ export type TInputProps = {
   mask?: string
   label?: string
   containerClassName?: string
+  error?: string
 } & ComponentProps<'input'>
 
 export const Input = ({
   leftIcon,
   className,
-  hasError = false,
   mask,
   label,
+  readOnly,
   containerClassName,
+  error,
   ...props
 }: TInputProps) => {
   const { className: leftIconClassName = '', ...leftIconProps } = leftIcon ? leftIcon.props : {}
@@ -44,18 +46,23 @@ export const Input = ({
 
         {cloneElement(Component, {
           className: StyleHelper.mergeStyles(
-            'w-full h-7 text-sm bg-transparent focus:shadow-none pr-2.5 rounded placeholder-grey-500 border ring-1 ring-transparent outline-none transition-colors text-grey-100 disabled:opacity-50',
+            'w-full h-7 text-sm bg-transparent pr-2.5 rounded placeholder-grey-500 ring-0 border outline-none transition-colors text-grey-100 disabled:opacity-50',
             {
-              'border-red-600/70': hasError,
-              'border-grey-600 focus:border-brand': !hasError,
+              'border-red-600/70': error,
+              'border-grey-500/30': !error,
+              'focus:ring-brand focus:shadow-none': !readOnly && !error,
+              'focus:ring-red-600 focus:shadow-none': !readOnly && error,
               'pl-10': !!leftIcon,
               'pl-2.5': !leftIcon,
             },
             className
           ),
           ...props,
+          readOnly,
         })}
       </div>
+
+      {!!error && <span className="text-xs text-red-600 mt-0.5 block">{error}</span>}
     </div>
   )
 }

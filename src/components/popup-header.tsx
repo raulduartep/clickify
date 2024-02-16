@@ -9,13 +9,14 @@ import { useStorage } from '@hooks/use-storage'
 
 import { DropdownMenu } from './dropdown-menu'
 import { IconButton } from './icon-button'
+import { Tooltip } from './tolltip'
 
 type TProps = {
   withBackButton?: boolean
 }
 
 export const PopupHeader = ({ withBackButton = true }: TProps) => {
-  const { values, hasAllValues } = useStorage()
+  const { values } = useStorage()
   const navigate = useNavigate()
 
   const [hasPictureError, setHasPictureError] = useState<boolean>(false)
@@ -36,7 +37,9 @@ export const PopupHeader = ({ withBackButton = true }: TProps) => {
     <header className="flex justify-between px-6 pb-4 border-b-2 border-grey-600 items-center">
       <div className="flex gap-4 items-center">
         {withBackButton && (
-          <IconButton icon={<IconChevronLeft />} size="lg" colorScheme="gray" onClick={handleBackClick} />
+          <Tooltip content="Back">
+            <IconButton icon={<IconChevronLeft />} size="lg" colorScheme="gray" onClick={handleBackClick} />
+          </Tooltip>
         )}
 
         <Logo className="-mb-2" />
@@ -44,15 +47,11 @@ export const PopupHeader = ({ withBackButton = true }: TProps) => {
 
       <div className="flex">
         <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild disabled={!hasAllValues}>
+          <DropdownMenu.Trigger asChild>
             <button
               className={StyleHelper.mergeStyles(
-                'h-10 w-10 rounded-full border-2 bg-brand/20 border-brand relative outline-none',
-                'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 aria-[expanded=true]:border-brand-600',
-                {
-                  'cursor-not-allowed opacity-50': !hasAllValues,
-                  'group cursor-pointer transition-colors hover:border-brand-600': hasAllValues,
-                }
+                'h-10 w-10 rounded-full border-2 bg-brand/20 border-brand relative outline-none group cursor-pointer transition-colors hover:border-brand-600',
+                'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 aria-[expanded=true]:border-brand-600'
               )}
             >
               {values.user?.name && (hasPictureError || !values.user?.profilePicture) ? (
@@ -70,10 +69,7 @@ export const PopupHeader = ({ withBackButton = true }: TProps) => {
 
               <div
                 className={StyleHelper.mergeStyles(
-                  'bg-brand p-0.5 w-min h-min rounded-full text-grey-100 absolute -right-1 -bottom-1 border-2 border-grey-800 group-data-[disabled]:group-hover:bg-brand',
-                  {
-                    'transition-colors group-hover:bg-brand-600 group-aria-[expanded=true]:bg-brand-600': hasAllValues,
-                  }
+                  'bg-brand p-0.5 w-min h-min rounded-full text-grey-100 absolute -right-1 -bottom-1 border-2 border-grey-800 group-data-[disabled]:group-hover:bg-brand transition-colors group-hover:bg-brand-600 group-aria-[expanded=true]:bg-brand-600'
                 )}
               >
                 <IconChevronDown className="w-3 h-3" />

@@ -1,20 +1,19 @@
-import { useState } from "react"
+import { useCallback } from 'react'
+import { clockifyProjectSchema, clockifyUserSchema } from 'src/schemas/clockify'
 
-import { ClockifyService } from "@services/clockify"
+import { createClockifyAxios } from '@services/clockify'
 
-import { useStorage } from "./use-storage"
+import { useStorage } from './use-storage'
 
 export const useUpdateApiKey = () => {
   const { setStorage } = useStorage()
 
-  const [apiKey, setApiKey] = useState('')
-  const [fetching, setFetching] = useState(false)
+  const updateApiKey = useCallback(
+    async (apiKey: string) => {
+      const clockifyAxios = createClockifyAxios(apiKey)
 
-  const handleUpdateKey = async () => {
-    try {
-      setFetching(true)
-
-      const user = await ClockifyService.getUser(apiKey)
+      const { data } = await clockifyAxios.get('/user')
+      const user = clockifyUserSchema.parse(data)
 
       if (user.profilePicture) {
         try {
@@ -25,32 +24,25 @@ export const useUpdateApiKey = () => {
         }
       }
 
-      const [projects, tags] = await Promise.all([
-        ClockifyService.getAllProjects({ apiKey, workspaceId: user.activeWorkspace }),
-        ClockifyService.getAllTags({ apiKey, workspaceId: user.activeWorkspace }),
+      const [projectsResponse, tagsResponse] = await Promise.all([
+        clockifyAxios.get(`/workspaces/${user.activeWorkspace}/projects`),
+        clockifyAxios.get(`workspaces/${user.activeWorkspace}/tags?archived=false`),
       ])
 
-      const projectsWithClickupList = projects.map(project => ({
-        ...project,
-        clickupListNames: [],
-      }))
+      const projects = clockifyProjectSchema.array().parse(projectsResponse.data)
+      const tags = clockifyProjectSchema.array().parse(tagsResponse.data)
 
-      setStorage({
+      await setStorage({
         apiKey,
-        projects: projectsWithClickupList,
+        projects,
         tags,
         user,
       })
-    } finally {
-      setFetching(false)
-    }
-  }
+    },
+    [setStorage]
+  )
 
   return {
-    apiKey,
-    setApiKey,
-    fetching,
-    handleUpdateKey,
+    updateApiKey,
   }
-
 }

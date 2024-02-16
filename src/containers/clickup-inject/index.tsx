@@ -1,10 +1,8 @@
 import { StrictMode } from 'react'
-import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ClickupInjectLayout } from 'src/layouts/ClickupInjectLayout'
 
-import { ClockifyProvider } from '@contexts/clockify'
 import { StorageProvider } from '@contexts/storage'
-import { EnvHelper } from '@helpers/env'
-import { StyleHelper } from '@helpers/style'
 import { TClickupVersion } from '@interfaces/clickup'
 
 import { ClickupInjectTimeButton } from './time-button'
@@ -19,7 +17,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: Infinity,
-      cacheTime: Infinity,
+      gcTime: Infinity,
     },
   },
 })
@@ -29,21 +27,9 @@ export const ClickupInjectContainer = ({ version }: TProps) => {
     <StrictMode>
       <QueryClientProvider client={queryClient}>
         <StorageProvider>
-          <ClockifyProvider version={version}>
-            <div
-              className={StyleHelper.mergeStyles({
-                'w-screen h-screen bg-grey-800 flex justify-center items-center': EnvHelper.DEV,
-              })}
-            >
-              <div
-                className={StyleHelper.mergeStyles('flex gap-2 mx-4', {
-                  'my-2': version === 'v3',
-                })}
-              >
-                <ClickupInjectTimeButton />
-              </div>
-            </div>
-          </ClockifyProvider>
+          <ClickupInjectLayout version={version}>
+            <ClickupInjectTimeButton version={version} />
+          </ClickupInjectLayout>
         </StorageProvider>
       </QueryClientProvider>
     </StrictMode>

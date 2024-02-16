@@ -1,9 +1,12 @@
 import { DateHelper } from '@helpers/date'
 import { StyleHelper } from '@helpers/style'
-import { useClockify } from '@hooks/use-clockify'
 
-export const ClickupInjectTimeButtonCountUp = () => {
-  const { isRunning, runningSeconds } = useClockify()
+type TProps = {
+  runningSeconds: number
+  isRunning: boolean
+}
+
+export const ClickupInjectTimeButtonCountUp = ({ runningSeconds, isRunning }: TProps) => {
   const formatted = DateHelper.formatDurationInSeconds(runningSeconds)
 
   return (

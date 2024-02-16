@@ -1,27 +1,26 @@
 import { memo } from 'react'
+import { TClockifyTimeEntry } from 'src/schemas/clockify'
 
 import { Table } from '@components/table'
-import { DateHelper, DateUTCHelper } from '@helpers/date'
-import { TClockifyTimeEntryResponse } from '@interfaces/services'
+import { DateHelper } from '@helpers/date'
 
 import { TableRowOfEntry } from './table-row-of-entry'
 
 type Props = {
-  entries: TClockifyTimeEntryResponse[]
+  entries: TClockifyTimeEntry[]
   date: string
 }
 
 export const TableOfEntries = memo(({ date, entries }: Props) => {
   const duration = entries.reduce((acc, entry) => {
-    return acc + DateHelper.durationInSeconds(entry.timeInterval.start, entry.timeInterval.end)
+    return acc + DateHelper.durationInSeconds(entry.timeInterval.end as string, entry.timeInterval.start)
   }, 0)
   const formattedDuration = DateHelper.formatDurationInSeconds(duration)
-  const formattedDate = DateUTCHelper.toLocalFormattedDate(date).slice(0, -5)
 
   return (
     <li className="border border-grey-600 rounded-md text-sm">
       <div className="flex justify-between px-3 font-medium py-1.5 bg-brand/10">
-        <p>{formattedDate}</p>
+        <p>{date}</p>
         <p>{formattedDuration}</p>
       </div>
 

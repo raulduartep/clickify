@@ -1,7 +1,9 @@
 import { ClockifyHelper } from '@helpers/clockify'
-import { DateUTCHelper } from '@helpers/date'
+import { DateHelper } from '@helpers/date'
 import { UtilsHelper } from '@helpers/utils'
-import { ClockifyService } from '@services/clockify'
+import { createClockifyAxios } from '@services/clockify'
+
+import { clockifyTimeEntrySchema } from './schemas/clockify'
 
 console.info('Clickify Extension Info: content script loaded')
 
@@ -16,13 +18,14 @@ const handleStartButtonClick = async () => {
   // Waiting for the time entry to be created
   await UtilsHelper.sleep(100)
 
-  const runningEntry = await ClockifyService.getLastTimeEntry({
-    apiKey: apiKey,
-    userId: user.id,
-    workspaceId: user.activeWorkspace,
-  })
+  const clockifyAxios = createClockifyAxios(apiKey)
+  const { data } = await clockifyAxios.get(
+    `workspaces/${user.activeWorkspace}/user/${user.id}/time-entries?page-size=1`
+  )
 
-  if (runningEntry.timeInterval.end || runningEntry.timeInterval.duration) throw new Error('Time entry already ended')
+  const runningEntry = clockifyTimeEntrySchema.parse(data[0])
+
+  if (runningEntry.timeInterval.end) throw new Error('Time entry already ended')
 
   await chrome.storage.local.set({
     runningEntry,
@@ -45,14 +48,8 @@ const handleTimeChange = async (event: HTMLElementEventMap['change']) => {
   if (!runningEntry) return
 
   const element = event.target as HTMLInputElement
-  const [hour, minutes] = element.value.split(':')
 
-  const start = DateUTCHelper.editTimeFromLocalAndFormatDateTime(
-    runningEntry.timeInterval.start,
-    Number(hour),
-    Number(minutes),
-    0
-  )
+  const start = DateHelper.editDateTime(runningEntry.timeInterval.start, element.value)
 
   await chrome.storage.local.set({
     runningEntry: {

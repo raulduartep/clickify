@@ -18,12 +18,12 @@ export const IconButton = forwardRef<HTMLButtonElement, TIconButtonProps>(
         aria-disabled={disabled}
         disabled={disabled}
         className={StyleHelper.mergeStyles(
-          'flex items-center justify-center',
+          'flex items-center justify-center outline-none',
           'aria-[disabled=true]:cursor-not-allowed aria-[disabled=true]:opacity-40',
           {
             'min-w-[1rem] max-w-[1rem] min-h-[1rem] max-h-[1rem] rounded-sm': size === 'xs',
-            'min-w-[1.5rem] max-w-[1.5rem] min-h-[1.5rem] max-h-[1.5rem] rounded-md': size === 'lg',
-            'text-brand aria-[disabled=false]:hover:bg-brand/2 aria-[expanded=true]:bg-brand/2':
+            'min-w-[1.75rem] max-w-[1.75rem] min-h-[1.75rem] max-h-[1.75rem] rounded': size === 'lg',
+            'text-brand aria-[disabled=false]:hover:bg-brand/20 aria-[expanded=true]:bg-brand/20':
               colorScheme === 'brand',
             'text-grey-500 aria-[disabled=false]:hover:bg-grey-500/20 aria-[expanded=true]:bg-grey-500/20':
               colorScheme === 'gray',

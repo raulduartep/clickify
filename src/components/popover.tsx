@@ -1,44 +1,30 @@
-import { ReactNode } from 'react'
-import * as RadixPopover from '@radix-ui/react-popover'
+import { ComponentPropsWithoutRef, ElementRef, forwardRef } from 'react'
+import * as PopoverPrimitive from '@radix-ui/react-popover'
 
 import { StyleHelper } from '@helpers/style'
 
-type TProps = {
-  children: ReactNode
-  trigger: JSX.Element
-  isOpen: boolean
-  onOpenChange: (isOpen: boolean) => void
-  contentClassName?: string
-} & Pick<RadixPopover.PopoverContentProps, 'side' | 'align'>
+const Root = PopoverPrimitive.Root
 
-export const Popover = ({
-  children,
-  trigger,
-  isOpen,
-  onOpenChange,
-  contentClassName,
-  align = 'center',
-  side = 'bottom',
-}: TProps) => {
-  return (
-    <RadixPopover.Root open={isOpen} onOpenChange={onOpenChange}>
-      <RadixPopover.Trigger asChild className="data-[state=open]:bg-grey-900">
-        {trigger}
-      </RadixPopover.Trigger>
+const Trigger = PopoverPrimitive.Trigger
 
-      <RadixPopover.Content
-        side={side}
-        align={align}
-        sideOffset={5}
-        className={StyleHelper.mergeStyles(
-          'bg-grey-900 p-3 rounded-md text-grey-100 shadow-xl z-[1001]',
-          contentClassName
-        )}
-      >
-        <RadixPopover.Arrow className="fill-grey-900" />
+const Anchor = PopoverPrimitive.Anchor
 
-        {children}
-      </RadixPopover.Content>
-    </RadixPopover.Root>
-  )
-}
+const Content = forwardRef<
+  ElementRef<typeof PopoverPrimitive.Content>,
+  ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
+>(({ className, align = 'center', sideOffset = 4, ...props }, ref) => (
+  <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Content
+      ref={ref}
+      align={align}
+      sideOffset={sideOffset}
+      className={StyleHelper.mergeStyles(
+        'z-50 rounded-md bg-grey-900 p-4 text-grey-100 shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+        className
+      )}
+      {...props}
+    />
+  </PopoverPrimitive.Portal>
+))
+
+export const Popover = { Root, Trigger, Content, Anchor }

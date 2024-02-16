@@ -10,11 +10,13 @@ type Props = {
   value?: string
   readOnly?: boolean
   onChange?: (value: string) => void
+  className?: string
+  label?: string
 }
 
 export const NO_TAG_VALUE = 'no-tag'
 
-export const TagsSelect = ({ triggerClassName, value, readOnly, onChange }: Props) => {
+export const TagsSelect = ({ triggerClassName, value, readOnly, onChange, className, label }: Props) => {
   const { values } = useStorage()
 
   const [open, setOpen] = useState(false)
@@ -26,28 +28,36 @@ export const TagsSelect = ({ triggerClassName, value, readOnly, onChange }: Prop
   }
 
   return (
-    <Select.Root
-      disabled={!values.tags}
-      value={value}
-      open={open}
-      onOpenChange={handleOpenChange}
-      onValueChange={onChange}
-    >
-      <Select.Trigger
-        className={StyleHelper.mergeStyles(triggerClassName, {
-          'cursor-default': readOnly,
-        })}
+    <div className={StyleHelper.mergeStyles('w-full', className)}>
+      {label && (
+        <label className="text-grey-500 text-xs" htmlFor="tags">
+          {label}
+        </label>
+      )}
+      <Select.Root
+        disabled={!values.tags}
+        value={value}
+        open={open}
+        onOpenChange={handleOpenChange}
+        onValueChange={onChange}
+        name="tags"
       >
-        <Select.Value placeholder="Tags" />
-      </Select.Trigger>
-      <Select.Content>
-        <Select.Item value={NO_TAG_VALUE}>No tag</Select.Item>
-        {values.tags?.map(tag => (
-          <Select.Item key={tag.id} value={tag.id}>
-            {tag.name}
-          </Select.Item>
-        ))}
-      </Select.Content>
-    </Select.Root>
+        <Select.Trigger
+          className={StyleHelper.mergeStyles('w-full', triggerClassName, {
+            'cursor-default': readOnly,
+          })}
+        >
+          <Select.Value placeholder="Tags" />
+        </Select.Trigger>
+        <Select.Content>
+          <Select.Item value={NO_TAG_VALUE}>No tag</Select.Item>
+          {values.tags?.map(tag => (
+            <Select.Item key={tag.id} value={tag.id}>
+              {tag.name}
+            </Select.Item>
+          ))}
+        </Select.Content>
+      </Select.Root>
+    </div>
   )
 }

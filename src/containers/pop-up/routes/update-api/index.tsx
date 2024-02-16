@@ -1,32 +1,44 @@
-import { ChangeEvent, Fragment, useEffect } from 'react'
+import { useEffect } from 'react'
+import { PrivatePopupLayout } from 'src/layouts/PrivatePopupLayout'
 
 import { Button } from '@components/button'
 import { Input } from '@components/input'
 import { PopupHeader } from '@components/popup-header'
+import { useActions } from '@hooks/use-actions'
 import { useStorage } from '@hooks/use-storage'
 import { useUpdateApiKey } from '@hooks/use-update-api-key'
 
+type TFormData = {
+  apiKey: string
+}
+
 export const PopupUpdateApiPage = () => {
   const { values } = useStorage()
-  const { apiKey, fetching, handleUpdateKey, setApiKey } = useUpdateApiKey()
+  const { updateApiKey } = useUpdateApiKey()
 
-  const handleApiKeyChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setApiKey(event.target.value)
-  }
+  const { actionData, setDataFromEventWrapper, setError, setData, actionState, handleAct } = useActions<TFormData>({
+    apiKey: '',
+  })
 
-  const handleSubmit = (event: ChangeEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    handleUpdateKey()
+  const handleSubmit = () => {
+    if (actionData.apiKey.length !== 48) {
+      setError({
+        apiKey: 'Invalid API key',
+      })
+      return
+    }
+
+    updateApiKey(actionData.apiKey)
   }
 
   useEffect(() => {
-    setApiKey(values.apiKey ?? '')
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [values.apiKey])
+    setData({
+      apiKey: values.apiKey,
+    })
+  }, [values.apiKey, setData])
 
   return (
-    <Fragment>
+    <PrivatePopupLayout>
       <PopupHeader />
 
       <div className="px-6">
@@ -34,13 +46,19 @@ export const PopupUpdateApiPage = () => {
           Make sure of this action, when you update your API key, it will update all projects, tags and users data.
         </div>
 
-        <form className="flex flex-col gap-2" onSubmit={handleSubmit}>
-          <Input label="YOUR API KEY" name="api-key" value={apiKey} onChange={handleApiKeyChange} />
-          <Button colorSchema="red" type="submit" loading={fetching}>
+        <form className="flex flex-col gap-2" onSubmit={handleAct(handleSubmit)}>
+          <Input
+            label="YOUR API KEY"
+            name="api-key"
+            value={actionData.apiKey}
+            onChange={setDataFromEventWrapper('apiKey')}
+            error={actionState.errors.apiKey}
+          />
+          <Button colorSchema="red" type="submit" loading={actionState.isActing} disabled={!actionState.isValid}>
             Update
           </Button>
         </form>
       </div>
-    </Fragment>
+    </PrivatePopupLayout>
   )
 }

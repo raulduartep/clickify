@@ -1,46 +1,49 @@
-import dayjs from 'dayjs'
-import duration from 'dayjs/plugin/duration'
-import utc from 'dayjs/plugin/utc'
+import * as dateFns from 'date-fns'
 
-dayjs.extend(utc)
-dayjs.extend(duration)
+type DateLike = string | Date
 
 export class DateHelper {
-  static formatDurationInSeconds(durationInSeconds: number, format = 'HH:mm:ss') {
-    return dayjs.duration(durationInSeconds, 'seconds').format(format)
+  static parse(date: DateLike) {
+    if (typeof date === 'string') {
+      return dateFns.parseISO(date)
+    }
+
+    return date
   }
 
-  static durationInSeconds(start: string, end?: string) {
-    const entryDate = dayjs.utc(start)
-    const now = dayjs.utc(end)
+  static formatDurationInSeconds(durationInSeconds: number) {
+    const duration = dateFns.intervalToDuration({ start: 0, end: durationInSeconds * 1000 })
+    const formatted = dateFns.formatDuration(duration, {
+      format: ['hours', 'minutes', 'seconds'],
+      zero: true,
+      delimiter: ':',
+      locale: {
+        formatDistance: (_token, count) => String(count).padStart(2, '0'),
+      },
+    })
 
-    const diff = now.diff(entryDate, 'seconds')
-
-    return diff
-  }
-}
-
-export class DateUTCHelper {
-  static formattedNowDateTime() {
-    return dayjs.utc().format('YYYY-MM-DDTHH:mm:ss[Z]')
-  }
-
-  static editTimeFromLocalAndFormatDateTime(from: string, newHour: number, newMinutes: number, newSeconds: number) {
-    return dayjs
-      .utc(from)
-      .local()
-      .set('hours', newHour)
-      .set('minutes', newMinutes)
-      .set('seconds', newSeconds)
-      .utc()
-      .format('YYYY-MM-DDTHH:mm:ss[Z]')
+    return formatted
   }
 
-  static toLocalFormattedDate(date: string | Date) {
-    return dayjs.utc(date).toDate().toLocaleDateString()
+  static durationInSeconds(left: DateLike, right: DateLike) {
+    return dateFns.differenceInSeconds(this.parse(left), this.parse(right))
   }
 
-  static isBefore(date: string | Date, compare: string | Date) {
-    return dayjs(date).isBefore(dayjs(compare))
+  static isValidTime(time: string | Date) {
+    const date = typeof time === 'string' ? dateFns.parse(time, 'HH:mm', new Date()) : time
+    return dateFns.isValid(date)
+  }
+
+  static editDateTime(from: DateLike, time: string) {
+    if (!this.isValidTime(time)) {
+      throw new Error('Invalid time')
+    }
+    const date = dateFns.parse(time, 'HH:mm', this.parse(from))
+    return date
+  }
+
+  static addSecondsToTime(time: string, seconds: number) {
+    const date = dateFns.parse(time, 'HH:mm', new Date())
+    return dateFns.addSeconds(date, seconds)
   }
 }

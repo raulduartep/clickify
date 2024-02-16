@@ -8,13 +8,26 @@ type TProps = {
   align?: PopperContentProps['align']
   content?: string
   delay?: number
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-export const Tooltip = ({ children, sideOffset = 4, content, delay, side = 'bottom', align = 'center' }: TProps) => {
+export const Tooltip = ({
+  children,
+  sideOffset = 4,
+  content,
+  delay,
+  side = 'bottom',
+  align = 'center',
+  open,
+  onOpenChange,
+}: TProps) => {
   return (
     <TooltipPrimitive.Provider>
-      <TooltipPrimitive.Root delayDuration={delay}>
-        <TooltipPrimitive.TooltipTrigger asChild>{children}</TooltipPrimitive.TooltipTrigger>
+      <TooltipPrimitive.Root delayDuration={delay} open={open} onOpenChange={onOpenChange}>
+        <TooltipPrimitive.TooltipTrigger asChild>
+          <span>{children}</span>
+        </TooltipPrimitive.TooltipTrigger>
 
         {content && (
           <TooltipPrimitive.Content
