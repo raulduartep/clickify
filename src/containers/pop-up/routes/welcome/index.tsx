@@ -1,5 +1,5 @@
+import { Fragment } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MainPopupLayout } from 'src/layouts/MainPopupLayout'
 
 import Logo from '@assets/images/icon.svg?react'
 import { Button } from '@components/button'
@@ -35,7 +35,7 @@ export const PopupWelcomePage = () => {
   }
 
   return (
-    <MainPopupLayout>
+    <Fragment>
       <div className="px-6 flex flex-col text-grey-100 justify-between ">
         <div className="flex flex-col items-center">
           <p className="text-4xl font-bold  mt-12">Welcome to</p>
@@ -62,6 +62,6 @@ export const PopupWelcomePage = () => {
           </Button>
         </form>
       </div>
-    </MainPopupLayout>
+    </Fragment>
   )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IconClockEdit, IconClockPlus, IconTrash } from '@tabler/icons-react'
 
@@ -12,25 +12,26 @@ import { Tooltip } from '@components/tolltip'
 import { DateHelper } from '@helpers/date'
 import { useActions } from '@hooks/use-actions'
 import { useClockifyEntryService } from '@hooks/use-clockify-entry-service'
-import { useEntryCountUp } from '@hooks/use-entry-countup'
+import { useIntervalEffect } from '@hooks/use-interval-effect'
 import { useStorage } from '@hooks/use-storage'
 
 type TFormData = {
   description: string
   projectId: string
   tagId: string
+  runningSeconds: number
 }
 
 export const CurrentEntryForm = () => {
   const { values } = useStorage()
   const { playEntry, stopEntry, deleteTimeEntry } = useClockifyEntryService()
   const navigate = useNavigate()
-  const seconds = useEntryCountUp(values.runningEntry)
 
   const { actionData, setDataItemWrapper, setData, setDataFromEventWrapper, reset } = useActions<TFormData>({
     description: '',
     projectId: NO_PROJECT_VALUE,
     tagId: NO_TAG_VALUE,
+    runningSeconds: 0,
   })
 
   const [isHovering, setIsHovering] = useState(false)
@@ -55,12 +56,22 @@ export const CurrentEntryForm = () => {
   }
 
   const handleEdit = () => {
-    navigate('/edit/', { state: { entry: values.runningEntry } })
+    navigate(`/edit/?${new URLSearchParams({ entry: JSON.stringify(values.runningEntry) }).toString()}`)
   }
 
   const handleAddManual = () => {
     navigate('/edit')
   }
+
+  const handleIntervalEffect = useCallback(() => {
+    if (!values.runningEntry) return
+
+    setData({
+      runningSeconds: DateHelper.durationInSeconds(new Date(), values.runningEntry.timeInterval.start),
+    })
+  }, [values.runningEntry, setData])
+
+  useIntervalEffect(handleIntervalEffect, 1000, !!values.runningEntry)
 
   useEffect(() => {
     if (!values.runningEntry) return
@@ -69,6 +80,10 @@ export const CurrentEntryForm = () => {
       description: values.runningEntry.description,
       projectId: values.runningEntry.projectId ?? NO_PROJECT_VALUE,
       tagId: values.runningEntry.tagId ?? NO_TAG_VALUE,
+      runningSeconds: DateHelper.durationInSeconds(
+        new Date(),
+        DateHelper.parse(values.runningEntry.timeInterval.start)
+      ),
     })
   }, [values.runningEntry, setData])
 
@@ -120,7 +135,11 @@ export const CurrentEntryForm = () => {
           colorSchema={values.runningEntry ? 'red' : 'brand'}
           onClick={values.runningEntry ? handleStop : handleStart}
         >
-          {values.runningEntry ? (isHovering ? 'Stop' : DateHelper.formatDurationInSeconds(seconds)) : 'Start'}
+          {values.runningEntry
+            ? isHovering
+              ? 'Stop'
+              : DateHelper.formatDurationInSeconds(actionData.runningSeconds)
+            : 'Start'}
         </Button>
 
         <ProjectsSelect

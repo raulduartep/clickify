@@ -43,7 +43,7 @@ export const TableRowOfEntry = ({ entry }: Props) => {
   }
 
   const handleEdit = () => {
-    navigate('/edit/', { state: { entry } })
+    navigate(`/edit/?${new URLSearchParams({ entry: JSON.stringify(entry) }).toString()}`)
   }
 
   return (

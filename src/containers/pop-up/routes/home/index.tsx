@@ -1,4 +1,4 @@
-import { PrivatePopupLayout } from 'src/layouts/PrivatePopupLayout'
+import { Fragment } from 'react'
 
 import { PopupHeader } from '@components/popup-header'
 
@@ -7,7 +7,7 @@ import { ListOfLastEntries } from './list-of-last-entries'
 
 export const PopupHomePage = () => {
   return (
-    <PrivatePopupLayout>
+    <Fragment>
       <PopupHeader withBackButton={false} />
 
       <main className="px-6 py-4 flex flex-col min-h-0 flex-grow">
@@ -15,6 +15,6 @@ export const PopupHomePage = () => {
 
         <ListOfLastEntries />
       </main>
-    </PrivatePopupLayout>
+    </Fragment>
   )
 }

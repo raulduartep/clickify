@@ -1,6 +1,8 @@
 import { StrictMode } from 'react'
 import { createHashRouter, RouterProvider } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MainPopupLayout } from 'src/layouts/MainPopupLayout'
+import { PrivatePopupLayout } from 'src/layouts/PrivatePopupLayout'
 
 import { StorageProvider } from '@contexts/storage'
 
@@ -20,10 +22,38 @@ const queryClient = new QueryClient({
   },
 })
 const router = createHashRouter([
-  { path: '/', element: <PopupHomePage /> },
-  { path: '/update-api', element: <PopupUpdateApiPage /> },
-  { path: '/welcome', element: <PopupWelcomePage /> },
-  { path: '/edit', element: <PopupEditPage /> },
+  {
+    path: '/',
+    element: (
+      <PrivatePopupLayout>
+        <PopupHomePage />
+      </PrivatePopupLayout>
+    ),
+  },
+  {
+    path: '/update-api',
+    element: (
+      <PrivatePopupLayout>
+        <PopupUpdateApiPage />
+      </PrivatePopupLayout>
+    ),
+  },
+  {
+    path: '/edit',
+    element: (
+      <PrivatePopupLayout>
+        <PopupEditPage />
+      </PrivatePopupLayout>
+    ),
+  },
+  {
+    path: '/welcome',
+    element: (
+      <MainPopupLayout>
+        <PopupWelcomePage />
+      </MainPopupLayout>
+    ),
+  },
 ])
 
 export const PopupContainer = () => {

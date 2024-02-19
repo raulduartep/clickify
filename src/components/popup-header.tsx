@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { IconChevronDown, IconChevronLeft } from '@tabler/icons-react'
 
 import Logo from '@assets/images/icon.svg?react'
@@ -18,6 +18,7 @@ type TProps = {
 export const PopupHeader = ({ withBackButton = true }: TProps) => {
   const { values } = useStorage()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const [hasPictureError, setHasPictureError] = useState<boolean>(false)
 
@@ -36,7 +37,7 @@ export const PopupHeader = ({ withBackButton = true }: TProps) => {
   return (
     <header className="flex justify-between px-6 pb-4 border-b-2 border-grey-600 items-center">
       <div className="flex gap-4 items-center">
-        {withBackButton && (
+        {withBackButton && location.key !== 'default' && (
           <Tooltip content="Back">
             <IconButton icon={<IconChevronLeft />} size="lg" colorScheme="gray" onClick={handleBackClick} />
           </Tooltip>

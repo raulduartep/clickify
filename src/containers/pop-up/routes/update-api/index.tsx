@@ -1,5 +1,4 @@
-import { useEffect } from 'react'
-import { PrivatePopupLayout } from 'src/layouts/PrivatePopupLayout'
+import { Fragment, useEffect } from 'react'
 
 import { Button } from '@components/button'
 import { Input } from '@components/input'
@@ -38,7 +37,7 @@ export const PopupUpdateApiPage = () => {
   }, [values.apiKey, setData])
 
   return (
-    <PrivatePopupLayout>
+    <Fragment>
       <PopupHeader />
 
       <div className="px-6">
@@ -59,6 +58,6 @@ export const PopupUpdateApiPage = () => {
           </Button>
         </form>
       </div>
-    </PrivatePopupLayout>
+    </Fragment>
   )
 }

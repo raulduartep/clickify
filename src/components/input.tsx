@@ -1,5 +1,5 @@
 import { cloneElement, ComponentProps } from 'react'
-import InputMask from 'react-input-mask'
+import { IMaskInput } from 'react-imask'
 
 import { StyleHelper } from '@helpers/style'
 
@@ -24,7 +24,7 @@ export const Input = ({
 }: TInputProps) => {
   const { className: leftIconClassName = '', ...leftIconProps } = leftIcon ? leftIcon.props : {}
 
-  const Component = mask ? <InputMask mask={mask} maskChar={null} /> : <input />
+  const Component = mask ? <IMaskInput mask={mask} unmask={true} /> : <input />
 
   return (
     <div className={containerClassName}>

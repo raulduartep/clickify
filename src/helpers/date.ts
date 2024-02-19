@@ -42,8 +42,12 @@ export class DateHelper {
     return date
   }
 
-  static addSecondsToTime(time: string, seconds: number) {
-    const date = dateFns.parse(time, 'HH:mm', new Date())
+  static addSeconds(from: DateLike, seconds: number) {
+    const date = this.parse(from)
     return dateFns.addSeconds(date, seconds)
+  }
+
+  static isBefore(left: DateLike, right: DateLike) {
+    return dateFns.isBefore(this.parse(left), this.parse(right))
   }
 }

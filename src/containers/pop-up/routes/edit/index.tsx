@@ -1,7 +1,6 @@
-import { useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { Fragment, useCallback, useMemo } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { IconCalendar } from '@tabler/icons-react'
-import { PrivatePopupLayout } from 'src/layouts/PrivatePopupLayout'
 import { TClockifyTimeEntry } from 'src/schemas/clockify'
 
 import { Button } from '@components/button'
@@ -17,53 +16,98 @@ import { DateHelper } from '@helpers/date'
 import { StyleHelper } from '@helpers/style'
 import { useActions } from '@hooks/use-actions'
 import { useClockifyEntryService } from '@hooks/use-clockify-entry-service'
-import { useEntryCountUp } from '@hooks/use-entry-countup'
+import { useIntervalEffect } from '@hooks/use-interval-effect'
 import { useStorage } from '@hooks/use-storage'
+
+import { TimeInput } from './time-input'
 
 type TFormData = {
   description: string
   projectId: string
   tagId: string
-  date?: Date
+  date: Date
   startTime: string
   endTime: string
-  duration: string
+  durationInSeconds: number
+}
+
+const getInitialFormData = (searchParams: URLSearchParams, entry?: TClockifyTimeEntry): TFormData => {
+  if (entry) {
+    const endDate = entry.timeInterval?.end ? DateHelper.parse(entry.timeInterval.end) : new Date()
+    const startDate = DateHelper.parse(entry.timeInterval.start)
+    return {
+      description: entry.description,
+      projectId: entry.projectId ?? NO_PROJECT_VALUE,
+      tagId: entry.tagId ?? NO_TAG_VALUE,
+      date: startDate,
+      startTime: startDate.toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }),
+      endTime: endDate.toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }),
+      durationInSeconds: DateHelper.durationInSeconds(endDate, startDate),
+    }
+  }
+
+  return {
+    description: searchParams.get('description') ?? '',
+    projectId: searchParams.get('projectId') ?? NO_PROJECT_VALUE,
+    tagId: NO_TAG_VALUE,
+    date: new Date(),
+    startTime: new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }),
+    endTime: new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }),
+    durationInSeconds: 0,
+  }
 }
 
 export const PopupEditPage = () => {
   const { setStorage } = useStorage()
-  const { state } = useLocation()
-  const entry = state?.entry as TClockifyTimeEntry | undefined
-  const isRunning = entry && !entry?.timeInterval.end
-
   const navigate = useNavigate()
-  const seconds = useEntryCountUp(isRunning ? entry : undefined)
+  const [searchParams] = useSearchParams()
   const { editTimeEntry, addTimeEntry } = useClockifyEntryService()
 
+  const entry = useMemo(() => {
+    const searchParamEntry = searchParams.get('entry')
+    if (!searchParamEntry) return
+
+    return JSON.parse(searchParamEntry) as TClockifyTimeEntry
+  }, [searchParams])
+
+  const isRunning = !!entry && !entry?.timeInterval.end
+  const fromInjection = searchParams.get('fromInjection') === 'true'
+
   const { actionData, actionState, setDataFromEventWrapper, setError, setDataItemWrapper, setData, handleAct } =
-    useActions<TFormData>({
-      description: '',
-      projectId: NO_PROJECT_VALUE,
-      tagId: NO_TAG_VALUE,
-      date: new Date(),
-      startTime: '',
-      endTime: '',
-      duration: '',
-    })
+    useActions<TFormData>(getInitialFormData(searchParams, entry))
 
-  const handleCalculateDuration = () => {
-    if (!actionData.startTime || !actionData.endTime || !actionData.date) return
-
-    const regex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/
-    if (!regex.test(actionData.startTime) || !regex.test(actionData.endTime)) return
-
-    const durationInSeconds = DateHelper.durationInSeconds(
-      DateHelper.editDateTime(actionData.date, actionData.endTime),
-      DateHelper.editDateTime(actionData.date, actionData.startTime)
-    )
-
+  const handleSelectDate = (date?: Date) => {
+    if (!date) return
     setData({
-      duration: DateHelper.formatDurationInSeconds(durationInSeconds),
+      date,
+    })
+  }
+
+  const handleStartTimeChange = (value: string) => {
+    setData({
+      startTime: value,
+      durationInSeconds: DateHelper.durationInSeconds(
+        isRunning ? new Date() : DateHelper.editDateTime(actionData.date, actionData.endTime),
+        DateHelper.editDateTime(actionData.date, value)
+      ),
+    })
+  }
+
+  const handleEndTimeChange = (value: string) => {
+    setData({
+      endTime: value,
+      durationInSeconds: DateHelper.durationInSeconds(
+        DateHelper.editDateTime(actionData.date, value),
+        DateHelper.editDateTime(actionData.date, actionData.startTime)
+      ),
     })
   }
 
@@ -78,8 +122,16 @@ export const PopupEditPage = () => {
     return true
   }
 
+  const goBack = () => {
+    if (fromInjection) {
+      window.close()
+    } else {
+      navigate('/')
+    }
+  }
+
   const handleSubmitAdd = async () => {
-    if (!actionData.date || entry || !validateFields()) return
+    if (entry || !validateFields()) return
 
     const startDate = DateHelper.editDateTime(actionData.date, actionData.startTime)
     const endDate = DateHelper.editDateTime(actionData.date, actionData.endTime)
@@ -91,11 +143,12 @@ export const PopupEditPage = () => {
       projectId: actionData.projectId === NO_PROJECT_VALUE ? undefined : actionData.projectId,
       tagId: actionData.tagId === NO_TAG_VALUE ? undefined : actionData.tagId,
     })
-    navigate(-1)
+
+    goBack()
   }
 
   const handleSubmitEdit = async () => {
-    if (!actionData.date || !entry || !validateFields()) return
+    if (!entry || !validateFields()) return
 
     const startDate = DateHelper.editDateTime(actionData.date, actionData.startTime)
     const endDate = !isRunning ? DateHelper.editDateTime(actionData.date, actionData.endTime) : undefined
@@ -114,55 +167,27 @@ export const PopupEditPage = () => {
       })
     }
 
-    navigate(-1)
+    goBack()
   }
 
   const handleCancel = () => {
-    navigate(-1)
+    goBack()
   }
 
-  useEffect(() => {
-    let data: Partial<TFormData>
-
-    if (!entry) {
-      const now = new Date()
-      const time = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })
-      data = {
-        date: now,
-        startTime: time,
-        endTime: time,
+  const handleIntervalChange = useCallback(() => {
+    setData(prev => {
+      const newEndDate = new Date()
+      return {
+        durationInSeconds: prev.durationInSeconds + 1,
+        endTime: newEndDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }),
       }
-    } else {
-      const startDate = DateHelper.parse(entry.timeInterval.start)
-      const endDate = entry.timeInterval.end ? DateHelper.parse(entry.timeInterval.end) : undefined
-      data = {
-        description: entry.description,
-        projectId: entry.projectId ?? NO_PROJECT_VALUE,
-        tagId: entry.tagId ?? NO_TAG_VALUE,
-        date: startDate,
-        startTime: startDate.toLocaleTimeString(undefined, {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }),
-        endTime: endDate
-          ? endDate.toLocaleTimeString(undefined, {
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false,
-            })
-          : undefined,
-        duration: endDate
-          ? DateHelper.formatDurationInSeconds(DateHelper.durationInSeconds(endDate, entry.timeInterval.start))
-          : undefined,
-      }
-    }
+    })
+  }, [setData])
 
-    setData(data)
-  }, [entry, setData])
+  useIntervalEffect(handleIntervalChange, 1000, isRunning)
 
   return (
-    <PrivatePopupLayout>
+    <Fragment>
       <PopupHeader withBackButton={true} />
 
       <div className="flex px-6 py-4  justify-between items-center">
@@ -173,34 +198,22 @@ export const PopupEditPage = () => {
         className="px-6 grid gap-x-3 gap-y-2 grid-cols-3"
         onSubmit={handleAct(entry ? handleSubmitEdit : handleSubmitAdd)}
       >
-        <Input
-          className="text-center"
-          mask="99:99"
+        <TimeInput
           value={actionData.startTime}
-          onChange={setDataFromEventWrapper('startTime')}
+          onValueChange={handleStartTimeChange}
           label="Start time"
           name="startTime"
-          onBlur={handleCalculateDuration}
         />
-        <Input
-          className={StyleHelper.mergeStyles('text-center', {
+        <TimeInput
+          className={StyleHelper.mergeStyles({
             'border-dashed text-brand': isRunning,
           })}
-          mask="99:99"
-          value={
-            isRunning
-              ? DateHelper.addSecondsToTime(actionData.startTime, seconds).toLocaleTimeString(undefined, {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false,
-                })
-              : actionData.endTime
-          }
-          onChange={setDataFromEventWrapper('endTime')}
+          value={actionData.endTime}
+          onValueChange={handleEndTimeChange}
           label="End time"
           name="endTime"
-          onBlur={handleCalculateDuration}
           readOnly={isRunning}
+          min={actionData.startTime}
         />
 
         <Input
@@ -208,7 +221,7 @@ export const PopupEditPage = () => {
           name="duration"
           label="Duration"
           readOnly
-          value={isRunning ? DateHelper.formatDurationInSeconds(seconds) : actionData.duration}
+          value={DateHelper.formatDurationInSeconds(actionData.durationInSeconds)}
         />
 
         <Input
@@ -225,13 +238,7 @@ export const PopupEditPage = () => {
           </Popover.Trigger>
 
           <Popover.Content className="p-0" align="end">
-            <Calendar
-              mode="single"
-              required
-              initialFocus
-              selected={actionData.date}
-              onSelect={setDataItemWrapper('date')}
-            />
+            <Calendar mode="single" required initialFocus selected={actionData.date} onSelect={handleSelectDate} />
           </Popover.Content>
         </Popover.Root>
 
@@ -254,7 +261,7 @@ export const PopupEditPage = () => {
           <TagsSelect value={actionData.tagId} onChange={setDataItemWrapper('tagId')} label="Select a tag" />
         </div>
 
-        <Button className="col-span-3 mt-4" colorSchema="red" variant="outlined" onClick={handleCancel}>
+        <Button className="col-span-3 mt-4" type="button" colorSchema="red" variant="outlined" onClick={handleCancel}>
           Cancel
         </Button>
 
@@ -262,6 +269,6 @@ export const PopupEditPage = () => {
           Save
         </Button>
       </form>
-    </PrivatePopupLayout>
+    </Fragment>
   )
 }
