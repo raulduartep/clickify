@@ -59,7 +59,7 @@ const Content = forwardRef<
   ElementRef<typeof SelectPrimitive.Content>,
   ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, position = 'popper', ...props }, ref) => (
-  <SelectPrimitive.Portal>
+  <SelectPrimitive.Portal container={document.getElementById('clickify-extension-root')}>
     <SelectPrimitive.Content
       ref={ref}
       className={StyleHelper.mergeStyles(

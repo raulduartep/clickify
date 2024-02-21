@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IconClockEdit, IconClockPlus, IconTrash } from '@tabler/icons-react'
+import { TClockifyTimeEntry } from 'src/schemas/clockify'
 
 import { Button } from '@components/button'
 import { DropdownMenu } from '@components/dropdown-menu'
 import { IconButton } from '@components/icon-button'
 import { Input } from '@components/input'
+import { LastEntriesSelect } from '@components/last-entries-select'
 import { NO_PROJECT_VALUE, ProjectsSelect } from '@components/projects-select'
 import { NO_TAG_VALUE, TagsSelect } from '@components/tags-select'
 import { Tooltip } from '@components/tolltip'
@@ -25,6 +27,7 @@ export const CurrentEntryForm = () => {
   const { values } = useStorage()
   const { playEntry, stopEntry, deleteTimeEntry } = useClockifyEntryService()
   const navigate = useNavigate()
+  // const { data } = useCompletedEntriesList()
 
   const { actionData, setDataItemWrapper, setData, setDataFromEventWrapper, reset } = useActions<TFormData>({
     description: '',
@@ -61,6 +64,14 @@ export const CurrentEntryForm = () => {
 
   const handleAddManual = () => {
     navigate('/edit')
+  }
+
+  const handleSelectEntry = (entry: TClockifyTimeEntry) => {
+    playEntry({
+      description: entry.description,
+      projectId: entry.projectId,
+      tagId: entry.tagId,
+    })
   }
 
   useEffect(() => {
@@ -106,13 +117,16 @@ export const CurrentEntryForm = () => {
       </div>
 
       <div className="grid grid-cols-4 grid-rows-2 gap-2">
-        <Input
-          value={actionData.description}
-          placeholder="What are you working on?"
-          onChange={setDataFromEventWrapper('description')}
-          containerClassName="col-span-3"
-          readOnly={!!values.runningEntry}
-        />
+        <LastEntriesSelect onEntrySelect={handleSelectEntry} value={actionData.description}>
+          <Input
+            value={actionData.description}
+            placeholder="What are you working on?"
+            name="description"
+            containerClassName="col-span-3"
+            onChange={setDataFromEventWrapper('description')}
+            readOnly={!!values.runningEntry}
+          />
+        </LastEntriesSelect>
 
         <Button
           className="col-span-1"

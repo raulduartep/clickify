@@ -7,6 +7,7 @@ import { Button } from '@components/button'
 import { Calendar } from '@components/calendar'
 import { IconButton } from '@components/icon-button'
 import { Input } from '@components/input'
+import { LastEntriesSelect } from '@components/last-entries-select'
 import { Popover } from '@components/popover'
 import { PopupHeader } from '@components/popup-header'
 import { NO_PROJECT_VALUE, ProjectsSelect } from '@components/projects-select'
@@ -137,6 +138,14 @@ export const PopupEditPage = () => {
     goBack()
   }
 
+  const handleSelectEntry = (entry: TClockifyTimeEntry) => {
+    setData({
+      description: entry.description,
+      projectId: entry.projectId ?? NO_PROJECT_VALUE,
+      tagId: entry.tagId ?? NO_TAG_VALUE,
+    })
+  }
+
   useIntervalEffect(
     () => {
       setData({
@@ -207,15 +216,17 @@ export const PopupEditPage = () => {
           </Popover.Content>
         </Popover.Root>
 
-        <Textarea
-          containerClassName="col-span-3"
-          className="resize-none"
-          value={actionData.description}
-          onChange={setDataFromEventWrapper('description')}
-          rows={3}
-          name="description"
-          label="What are you working on?"
-        />
+        <LastEntriesSelect onEntrySelect={handleSelectEntry} value={actionData.description}>
+          <Textarea
+            containerClassName="col-span-3"
+            className="resize-none"
+            value={actionData.description}
+            onChange={setDataFromEventWrapper('description')}
+            rows={3}
+            name="description"
+            label="What are you working on?"
+          />
+        </LastEntriesSelect>
 
         <div className="flex col-span-3 gap-3">
           <ProjectsSelect

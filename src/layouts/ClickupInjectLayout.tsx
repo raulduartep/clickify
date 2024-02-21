@@ -14,7 +14,6 @@ export const ClickupInjectLayout = ({ version, children }: TProps) => {
   const { hasAllValues } = useStorage()
   return (
     <div
-      id="clickify-extension-root"
       className={StyleHelper.mergeStyles({
         'w-screen h-screen bg-grey-800 flex justify-center items-center': EnvHelper.DEV,
       })}

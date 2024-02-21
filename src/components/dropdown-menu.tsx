@@ -13,7 +13,7 @@ const Content = forwardRef<
   ElementRef<typeof DropdownMenuPrimitive.Content>,
   ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
 >(({ className, sideOffset = 4, ...props }, ref) => (
-  <DropdownMenuPrimitive.Portal>
+  <DropdownMenuPrimitive.Portal container={document.getElementById('clickify-extension-root')}>
     <DropdownMenuPrimitive.Content
       ref={ref}
       sideOffset={sideOffset}

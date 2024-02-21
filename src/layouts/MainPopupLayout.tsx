@@ -14,7 +14,6 @@ export const MainPopupLayout = ({ children }: TProps) => {
 
   return (
     <div
-      id="clickify-extension-root"
       className={StyleHelper.mergeStyles('flex w-full h-full justify-center items-center bg-grey-900 text-gray-100', {
         'w-screen h-screen': fromInjection || EnvHelper.DEV,
       })}

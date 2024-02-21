@@ -81,8 +81,6 @@ export const PopupHeader = ({ withBackButton = true }: TProps) => {
           <DropdownMenu.Content align="end">
             <DropdownMenu.Label>{values.user?.name}</DropdownMenu.Label>
             <DropdownMenu.Separator />
-            <DropdownMenu.Item>Link Projects</DropdownMenu.Item>
-            <DropdownMenu.Separator />
             <DropdownMenu.Item className="text-red-500 focus:bg-red-500/10" onClick={handleChangeApiClick}>
               Update API Key
             </DropdownMenu.Item>

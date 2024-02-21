@@ -19,6 +19,9 @@ export default {
           DEFAULT: "#4C75F2",
           600: "#3c5af2",
         },
+        orange: {
+          DEFAULT: '#FE872F',
+        },
         grey: {
           100: "#d5d6d7",
           500: "#8e8f90",
