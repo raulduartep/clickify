@@ -30,7 +30,7 @@ npm run build
 
 A new button will appear on the screen for each task in Clickup next to the task id, but it will be disabled, to activate it, follow the steps below;
 
-[![Captura-de-Tela-2023-11-24-a-s-13-45-58.png](https://i.postimg.cc/0yrPkcYT/Captura-de-Tela-2023-11-24-a-s-13-45-58.png)](https://postimg.cc/Sn0wVLtd)
+[![Captura-de-Tela-2024-02-21-a-s-02-12-08.png](https://i.postimg.cc/SsH1QSPv/Captura-de-Tela-2024-02-21-a-s-02-12-08.png)](https://postimg.cc/WF6wXvTG)
 
 You will need to provide your CLOCKIFY API KEY, so to get it, follow the instructions below:
 
