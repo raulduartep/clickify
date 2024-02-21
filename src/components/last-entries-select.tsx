@@ -58,6 +58,7 @@ export const LastEntriesSelect = ({ onEntrySelect, children, value }: TProps) =>
             <button
               className="grid grid-cols-4 rounded-sm py-1.5 px-2 gap-2 text-xs outline-none hover:bg-grey-600 min-w-0 w-full text-grey-100"
               onClick={onEntrySelect?.bind(null, entry)}
+              key={`last-entries-select-${entry.id}`}
             >
               <p className="truncate col-span-2 min-w-0 text-left">{entry.description}</p>
               {project && (

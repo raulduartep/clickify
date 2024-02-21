@@ -44,17 +44,16 @@ const getInitialFormData = (searchParams: URLSearchParams, entry?: TClockifyTime
       endTime: endDate,
     }
   }
-
   const now = new Date()
-  now.setSeconds(0)
+  const nowWithoutSeconds = DateHelper.editDateTime(now, DateHelper.format(now, 'HH:mm'))
 
   return {
     description: searchParams.get('description') ?? '',
     projectId: searchParams.get('projectId') ?? NO_PROJECT_VALUE,
     tagId: NO_TAG_VALUE,
-    date: now,
-    startTime: now,
-    endTime: now,
+    date: nowWithoutSeconds,
+    startTime: nowWithoutSeconds,
+    endTime: nowWithoutSeconds,
   }
 }
 
@@ -155,6 +154,10 @@ export const PopupEditPage = () => {
     1000,
     isRunning
   )
+
+  console.log({
+    actionData,
+  })
 
   return (
     <Fragment>

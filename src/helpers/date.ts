@@ -11,6 +11,10 @@ export class DateHelper {
     return date
   }
 
+  static format(date: DateLike, format: string) {
+    return dateFns.format(this.parse(date), format)
+  }
+
   static formatDurationInSeconds(durationInSeconds: number) {
     const duration = dateFns.intervalToDuration({ start: 0, end: durationInSeconds * 1000 })
     const formatted = dateFns.formatDuration(duration, {
