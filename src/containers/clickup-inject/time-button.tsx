@@ -1,14 +1,13 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { IconPencil, IconPlayerPlay, IconPlayerStopFilled, IconPlus, IconTag } from '@tabler/icons-react'
 import { TClockifyTag } from 'src/schemas/clockify'
 
 import { DropdownMenu } from '@components/dropdown-menu'
 import { IconButton } from '@components/icon-button'
 import { ClickupHelper } from '@helpers/clickup'
-import { DateHelper } from '@helpers/date'
 import { StyleHelper } from '@helpers/style'
 import { useClockifyEntryService } from '@hooks/use-clockify-entry-service'
-import { useIntervalEffect } from '@hooks/use-interval-effect'
+import { useEntryCountUp } from '@hooks/use-entry-countup'
 import { useStorage } from '@hooks/use-storage'
 import { TClickupVersion } from '@interfaces/clickup'
 
@@ -23,7 +22,7 @@ export const ClickupInjectTimeButton = ({ version }: TProps) => {
   const { values } = useStorage()
   const { playEntry, stopEntry } = useClockifyEntryService()
 
-  const [runningSeconds, setRunningSeconds] = useState(0)
+  const runningSeconds = useEntryCountUp(values.runningEntry?.timeInterval?.start)
 
   const currentTaskId = useMemo(() => ClickupHelper.getCurrentTaskId(), [])
 
@@ -80,17 +79,6 @@ export const ClickupInjectTimeButton = ({ version }: TProps) => {
       throw new Error('Chrome is not defined. You need to run this as a Chrome extension to use this feature.')
     chrome.runtime.sendMessage({ type: 'openPopup', payload: { entry: JSON.stringify(values.runningEntry) } })
   }
-
-  const handleIntervalEffect = useCallback(() => {
-    if (!values.runningEntry) {
-      setRunningSeconds(0)
-      return
-    }
-
-    setRunningSeconds(DateHelper.durationInSeconds(new Date(), values.runningEntry.timeInterval.start))
-  }, [values.runningEntry])
-
-  useIntervalEffect(handleIntervalEffect, 1000, isRunning)
 
   return (
     <div className="flex flex-col gap-1">

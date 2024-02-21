@@ -109,9 +109,9 @@ export const useClockifyEntryService = () => {
 
           return {
             ...data,
-            pages: data.pages.map((page: any) => ({
+            pages: data.pages.map(page => ({
               ...page,
-              data: page.data.filter((entry: any) => entry.id !== entry.id),
+              data: page.data.filter(item => item.id !== entry.id),
             })),
           }
         }

@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useMemo } from 'react'
+import { Fragment, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { IconCalendar } from '@tabler/icons-react'
 import { TClockifyTimeEntry } from 'src/schemas/clockify'
@@ -26,9 +26,8 @@ type TFormData = {
   projectId: string
   tagId: string
   date: Date
-  startTime: string
-  endTime: string
-  durationInSeconds: number
+  startTime: Date
+  endTime: Date
 }
 
 const getInitialFormData = (searchParams: URLSearchParams, entry?: TClockifyTimeEntry): TFormData => {
@@ -40,28 +39,21 @@ const getInitialFormData = (searchParams: URLSearchParams, entry?: TClockifyTime
       projectId: entry.projectId ?? NO_PROJECT_VALUE,
       tagId: entry.tagId ?? NO_TAG_VALUE,
       date: startDate,
-      startTime: startDate.toLocaleTimeString(undefined, {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      }),
-      endTime: endDate.toLocaleTimeString(undefined, {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      }),
-      durationInSeconds: DateHelper.durationInSeconds(endDate, startDate),
+      startTime: startDate,
+      endTime: endDate,
     }
   }
+
+  const now = new Date()
+  now.setSeconds(0)
 
   return {
     description: searchParams.get('description') ?? '',
     projectId: searchParams.get('projectId') ?? NO_PROJECT_VALUE,
     tagId: NO_TAG_VALUE,
-    date: new Date(),
-    startTime: new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }),
-    endTime: new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }),
-    durationInSeconds: 0,
+    date: now,
+    startTime: now,
+    endTime: now,
   }
 }
 
@@ -91,26 +83,6 @@ export const PopupEditPage = () => {
     })
   }
 
-  const handleStartTimeChange = (value: string) => {
-    setData({
-      startTime: value,
-      durationInSeconds: DateHelper.durationInSeconds(
-        isRunning ? new Date() : DateHelper.editDateTime(actionData.date, actionData.endTime),
-        DateHelper.editDateTime(actionData.date, value)
-      ),
-    })
-  }
-
-  const handleEndTimeChange = (value: string) => {
-    setData({
-      endTime: value,
-      durationInSeconds: DateHelper.durationInSeconds(
-        DateHelper.editDateTime(actionData.date, value),
-        DateHelper.editDateTime(actionData.date, actionData.startTime)
-      ),
-    })
-  }
-
   const validateFields = () => {
     const startTimeError = !DateHelper.isValidTime(actionData.startTime) ? 'Invalid start time' : undefined
     const endTimeError = !isRunning && !DateHelper.isValidTime(actionData.endTime) ? 'Invalid end time' : undefined
@@ -133,13 +105,10 @@ export const PopupEditPage = () => {
   const handleSubmitAdd = async () => {
     if (entry || !validateFields()) return
 
-    const startDate = DateHelper.editDateTime(actionData.date, actionData.startTime)
-    const endDate = DateHelper.editDateTime(actionData.date, actionData.endTime)
-
     await addTimeEntry({
       description: actionData.description,
-      end: endDate,
-      start: startDate,
+      end: actionData.endTime,
+      start: actionData.startTime,
       projectId: actionData.projectId === NO_PROJECT_VALUE ? undefined : actionData.projectId,
       tagId: actionData.tagId === NO_TAG_VALUE ? undefined : actionData.tagId,
     })
@@ -150,13 +119,11 @@ export const PopupEditPage = () => {
   const handleSubmitEdit = async () => {
     if (!entry || !validateFields()) return
 
-    const startDate = DateHelper.editDateTime(actionData.date, actionData.startTime)
-    const endDate = !isRunning ? DateHelper.editDateTime(actionData.date, actionData.endTime) : undefined
     const editedTimeEntry = await editTimeEntry({
       id: entry.id,
       description: actionData.description,
-      end: endDate,
-      start: startDate,
+      end: isRunning ? undefined : actionData.endTime,
+      start: actionData.startTime,
       projectId: actionData.projectId === NO_PROJECT_VALUE ? undefined : actionData.projectId,
       tagId: actionData.tagId === NO_TAG_VALUE ? undefined : actionData.tagId,
     })
@@ -170,21 +137,15 @@ export const PopupEditPage = () => {
     goBack()
   }
 
-  const handleCancel = () => {
-    goBack()
-  }
-
-  const handleIntervalChange = useCallback(() => {
-    setData(prev => {
-      const newEndDate = new Date()
-      return {
-        durationInSeconds: prev.durationInSeconds + 1,
-        endTime: newEndDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }),
-      }
-    })
-  }, [setData])
-
-  useIntervalEffect(handleIntervalChange, 1000, isRunning)
+  useIntervalEffect(
+    () => {
+      setData({
+        endTime: new Date(),
+      })
+    },
+    1000,
+    isRunning
+  )
 
   return (
     <Fragment>
@@ -200,20 +161,22 @@ export const PopupEditPage = () => {
       >
         <TimeInput
           value={actionData.startTime}
-          onValueChange={handleStartTimeChange}
+          onValueChange={setDataItemWrapper('startTime')}
           label="Start time"
           name="startTime"
+          date={actionData.date}
         />
         <TimeInput
           className={StyleHelper.mergeStyles({
             'border-dashed text-brand': isRunning,
           })}
           value={actionData.endTime}
-          onValueChange={handleEndTimeChange}
+          onValueChange={setDataItemWrapper('endTime')}
           label="End time"
           name="endTime"
           readOnly={isRunning}
           min={actionData.startTime}
+          date={actionData.date}
         />
 
         <Input
@@ -221,7 +184,9 @@ export const PopupEditPage = () => {
           name="duration"
           label="Duration"
           readOnly
-          value={DateHelper.formatDurationInSeconds(actionData.durationInSeconds)}
+          value={DateHelper.formatDurationInSeconds(
+            DateHelper.durationInSeconds(actionData.endTime, actionData.startTime)
+          )}
         />
 
         <Input
@@ -261,7 +226,7 @@ export const PopupEditPage = () => {
           <TagsSelect value={actionData.tagId} onChange={setDataItemWrapper('tagId')} label="Select a tag" />
         </div>
 
-        <Button className="col-span-3 mt-4" type="button" colorSchema="red" variant="outlined" onClick={handleCancel}>
+        <Button className="col-span-3 mt-4" type="button" colorSchema="red" variant="outlined" onClick={goBack}>
           Cancel
         </Button>
 

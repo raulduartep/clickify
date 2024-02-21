@@ -4,33 +4,41 @@ import { Input, TInputProps } from '@components/input'
 import { DateHelper } from '@helpers/date'
 import { StyleHelper } from '@helpers/style'
 
-type TProps = Omit<TInputProps, 'value'> & {
-  onValueChange: (value: string) => void
-  min?: string
-  value: string
+type TProps = Omit<TInputProps, 'value' | 'min'> & {
+  onValueChange: (value: Date) => void
+  min?: Date
+  value: Date
+  date: Date
 }
 
-export const TimeInput = ({ onValueChange, value, className, min, ...props }: TProps) => {
-  const [inputValue, setInputValue] = useState<string>(value as string)
+const formatDate = (date: Date) => {
+  return date.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+}
+
+export const TimeInput = ({ onValueChange, value, className, min, date, ...props }: TProps) => {
+  const [inputValue, setInputValue] = useState<string>(formatDate(value))
 
   const handleMin = useCallback(
-    (time: string) => {
+    (againstValue: string) => {
       try {
         if (min) {
-          const minDate = DateHelper.editDateTime(new Date(), min)
-          const date = DateHelper.editDateTime(new Date(), time)
+          const againstDate = DateHelper.editDateTime(date, againstValue)
 
-          if (DateHelper.isBefore(date, minDate)) {
-            return min
+          if (DateHelper.isBefore(againstDate, min)) {
+            return formatDate(min)
           }
         }
       } catch {
         /* empty */
       }
 
-      return time
+      return againstValue
     },
-    [min]
+    [min, date]
   )
 
   const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
@@ -38,7 +46,7 @@ export const TimeInput = ({ onValueChange, value, className, min, ...props }: TP
     if (!blurValue) {
       const stringBlurValue = value?.toString() ?? ''
       setInputValue(stringBlurValue)
-      onValueChange(stringBlurValue)
+      onValueChange(DateHelper.editDateTime(date, stringBlurValue))
       return
     }
 
@@ -55,11 +63,11 @@ export const TimeInput = ({ onValueChange, value, className, min, ...props }: TP
       minutesNumber = 59
     }
 
-    let hoursComplete = `${hoursNumber.toString().padEnd(2, '0')}:${minutesNumber.toString().padEnd(2, '0')}`
+    let hoursComplete = `${hoursNumber.toString().padStart(2, '0')}:${minutesNumber.toString().padStart(2, '0')}`
 
     hoursComplete = handleMin(hoursComplete)
 
-    onValueChange(hoursComplete)
+    onValueChange(DateHelper.editDateTime(date, hoursComplete))
     setInputValue(hoursComplete)
   }
 
@@ -72,7 +80,7 @@ export const TimeInput = ({ onValueChange, value, className, min, ...props }: TP
   }, [handleMin])
 
   useEffect(() => {
-    setInputValue(value)
+    setInputValue(formatDate(value))
   }, [value])
 
   return (

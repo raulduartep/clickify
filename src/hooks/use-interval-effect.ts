@@ -15,5 +15,6 @@ export const useIntervalEffect = (callback: () => void, delay: number, enable = 
       clearInterval(interval)
       window.removeEventListener('focus', runCallback)
     }
-  }, [delay, callback, enable])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [delay, enable])
 }
