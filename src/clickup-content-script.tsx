@@ -2,6 +2,7 @@ import ReactDOM from 'react-dom/client'
 
 import { ClickupInjectContainer } from '@containers/clickup-inject'
 import { ClickupHelper } from '@helpers/clickup'
+import { StorageHelper } from '@helpers/storage'
 import { UtilsHelper } from '@helpers/utils'
 
 console.info('Clickify Extension Info: content script loaded')
@@ -31,6 +32,12 @@ const deleteRoot = () => {
 }
 
 const init = async () => {
+  const { apiKey } = await StorageHelper.get(['apiKey'])
+  if (!apiKey) {
+    console.info('Clickify Extension Info: API Key not found. Please open the extension and set your API Key.')
+    return
+  }
+
   let url = document.location.href
 
   if (ClickupHelper.isClickupTaskUrl(url)) {

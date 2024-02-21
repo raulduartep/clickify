@@ -28,10 +28,6 @@ npm run build
 
 ## After install
 
-A new button will appear on the screen for each task in Clickup next to the task id, but it will be disabled, to activate it, follow the steps below;
-
-[![Captura-de-Tela-2024-02-21-a-s-02-12-08.png](https://i.postimg.cc/SsH1QSPv/Captura-de-Tela-2024-02-21-a-s-02-12-08.png)](https://postimg.cc/WF6wXvTG)
-
 You will need to provide your CLOCKIFY API KEY, so to get it, follow the instructions below:
 
 1. Access the clockify website and log in;
@@ -39,3 +35,7 @@ You will need to provide your CLOCKIFY API KEY, so to get it, follow the instruc
 3. Inside the settings there will be a session called API and below it will be your API KEY, copy it.
 4. Open the Clickify extension, paste the API KEY into the input and click on SAVE button
 5. Done. Now, you are ready to enjoy the extension.
+
+A new button will appear on the screen for each task in Clickup next to the task id, but it will be disabled, to activate it, follow the steps below;
+
+[![Captura-de-Tela-2024-02-21-a-s-02-12-08.png](https://i.postimg.cc/SsH1QSPv/Captura-de-Tela-2024-02-21-a-s-02-12-08.png)](https://postimg.cc/WF6wXvTG)
