@@ -10,6 +10,10 @@ console.info('Clickify Extension Info: content script loaded')
 const createRoot = async () => {
   const htmlElement = await UtilsHelper.waitForElement('.cu-v2, .cu-v3')
   const version = htmlElement.className.includes('cu-v2') ? 'v2' : 'v3'
+
+  const alreadyExist = document.getElementById('clickify-extension-root')
+  if (alreadyExist) return
+
   const root = document.createElement('div')
   root.id = 'clickify-extension-root'
 
