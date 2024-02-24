@@ -49,11 +49,19 @@ export const TableRowOfEntry = ({ entry }: Props) => {
   return (
     <Table.Row key={entry.id}>
       <Table.Cell>
+        <div className="flex gap-1 text-brand font-bold">
+          <p>{DateHelper.format(entry.timeInterval.start, 'HH:mm')}</p>
+          <span className="text-grey-500">-</span>
+          <p>{DateHelper.format(entry.timeInterval.end!, 'HH:mm')}</p>
+          <span className="text-grey-500">|</span>
+          <p>{duration}</p>
+        </div>
+
         <Tooltip content={entry.description} align="start">
           <p className="truncate">{entry.description}</p>
         </Tooltip>
       </Table.Cell>
-      <Table.Cell className={StyleHelper.mergeStyles('w-[4.4rem]')}>{duration}</Table.Cell>
+
       <Table.Cell className="w-[4rem]">
         <div className="flex gap-0.5">
           <Tooltip content={project?.name} delay={200}>
@@ -65,6 +73,7 @@ export const TableRowOfEntry = ({ entry }: Props) => {
           </Tooltip>
         </div>
       </Table.Cell>
+
       <Table.Cell className="w-[3rem]">
         <DropdownMenu.Root onOpenChange={handleDropdownOpenChange}>
           <DropdownMenu.Trigger asChild>

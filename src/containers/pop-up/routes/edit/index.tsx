@@ -12,7 +12,6 @@ import { Popover } from '@components/popover'
 import { PopupHeader } from '@components/popup-header'
 import { NO_PROJECT_VALUE, ProjectsSelect } from '@components/projects-select'
 import { NO_TAG_VALUE, TagsSelect } from '@components/tags-select'
-import { Textarea } from '@components/textarea'
 import { DateHelper } from '@helpers/date'
 import { StyleHelper } from '@helpers/style'
 import { useActions } from '@hooks/use-actions'
@@ -20,6 +19,7 @@ import { useClockifyEntryService } from '@hooks/use-clockify-entry-service'
 import { useIntervalEffect } from '@hooks/use-interval-effect'
 import { useStorage } from '@hooks/use-storage'
 
+import { LastThreeEntriesList } from './last-three-entries-list'
 import { TimeInput } from './time-input'
 
 type TFormData = {
@@ -163,7 +163,7 @@ export const PopupEditPage = () => {
     <Fragment>
       <PopupHeader withBackButton={true} />
 
-      <div className="flex px-6 py-4  justify-between items-center">
+      <div className="flex px-6 pt-4 pb-1 justify-between items-center">
         <p className="font-bold text-sm text-grey-500 uppercase">EDIT ENTRY</p>
       </div>
 
@@ -220,12 +220,10 @@ export const PopupEditPage = () => {
         </Popover.Root>
 
         <LastEntriesSelect onEntrySelect={handleSelectEntry} value={actionData.description}>
-          <Textarea
+          <Input
             containerClassName="col-span-3"
-            className="resize-none"
             value={actionData.description}
             onChange={setDataFromEventWrapper('description')}
-            rows={3}
             name="description"
             label="What are you working on?"
           />
@@ -240,14 +238,18 @@ export const PopupEditPage = () => {
           <TagsSelect value={actionData.tagId} onChange={setDataItemWrapper('tagId')} label="Select a tag" />
         </div>
 
-        <Button className="col-span-3 mt-4" type="button" colorSchema="red" variant="outlined" onClick={goBack}>
-          Cancel
-        </Button>
+        <div className="flex gap-2 col-span-3 mt-2">
+          <Button type="button" className="w-full" colorSchema="red" variant="outlined" onClick={goBack}>
+            Cancel
+          </Button>
 
-        <Button className="col-span-3" type="submit" loading={actionState.isActing} disabled={!actionState.isValid}>
-          Save
-        </Button>
+          <Button type="submit" className="w-full" loading={actionState.isActing} disabled={!actionState.isValid}>
+            Save
+          </Button>
+        </div>
       </form>
+
+      <LastThreeEntriesList />
     </Fragment>
   )
 }

@@ -18,7 +18,7 @@ export const IconButton = forwardRef<HTMLButtonElement, TIconButtonProps>(
         aria-disabled={disabled}
         disabled={disabled}
         className={StyleHelper.mergeStyles(
-          'flex items-center justify-center outline-none',
+          'flex items-center justify-center outline-none transition-colors',
           'aria-[disabled=true]:cursor-not-allowed aria-[disabled=true]:opacity-40',
           {
             'min-w-[1rem] max-w-[1rem] min-h-[1rem] max-h-[1rem] rounded-sm': size === 'xs',
