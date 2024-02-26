@@ -8,6 +8,7 @@ import { Calendar } from '@components/calendar'
 import { IconButton } from '@components/icon-button'
 import { Input } from '@components/input'
 import { LastEntriesSelect } from '@components/last-entries-select'
+import { OpenedClickupTaskTabSelect, TOpenedClickupTaskTab } from '@components/opened-clickup-task-tab-select'
 import { Popover } from '@components/popover'
 import { PopupHeader } from '@components/popup-header'
 import { NO_PROJECT_VALUE, ProjectsSelect } from '@components/projects-select'
@@ -145,6 +146,13 @@ export const PopupEditPage = () => {
     })
   }
 
+  const handleFillFromClickupTask = (value: TOpenedClickupTaskTab) => {
+    setData({
+      description: value.description,
+      projectId: value.project?.id,
+    })
+  }
+
   useIntervalEffect(
     () => {
       setData({
@@ -163,8 +171,10 @@ export const PopupEditPage = () => {
     <Fragment>
       <PopupHeader withBackButton={true} />
 
-      <div className="flex px-6 pt-4 pb-1 justify-between items-center">
+      <div className="flex px-6 pt-4 pb-1 gap-1 items-center">
         <p className="font-bold text-sm text-grey-500 uppercase">EDIT ENTRY</p>
+
+        <OpenedClickupTaskTabSelect onEntrySelect={handleFillFromClickupTask} />
       </div>
 
       <form

@@ -8,8 +8,7 @@ import { UtilsHelper } from '@helpers/utils'
 console.info('Clickify Extension Info: content script loaded')
 
 const createRoot = async () => {
-  const htmlElement = await UtilsHelper.waitForElement('.cu-v2, .cu-v3')
-  const version = htmlElement.className.includes('cu-v2') ? 'v2' : 'v3'
+  const version = await ClickupHelper.getClickupVersion()
 
   const alreadyExist = document.getElementById('clickify-extension-root')
   if (alreadyExist) return
@@ -61,6 +60,23 @@ const init = async () => {
   })
 
   observer.observe(document.body, { childList: true, subtree: true })
+
+  chrome.runtime.onMessage.addListener(
+    UtilsHelper.wrapAsyncFunction(async (message: any) => {
+      if (message.type === 'GET_TASK') {
+        const version = await ClickupHelper.getClickupVersion()
+        const { projects } = await StorageHelper.get(['projects'])
+
+        const description = ClickupHelper.getCurrentTimeEntryDescription(version)
+        const project = ClickupHelper.getCurrentProject(projects, version)
+
+        return {
+          description,
+          project,
+        }
+      }
+    })
+  )
 }
 
 init()

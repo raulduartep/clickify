@@ -56,7 +56,7 @@ export const LastEntriesSelect = ({ onEntrySelect, children, value }: TProps) =>
 
           return (
             <button
-              className="grid grid-cols-4 rounded-sm py-1.5 px-2 gap-2 text-xs outline-none hover:bg-grey-600 min-w-0 w-full text-grey-100"
+              className="grid grid-cols-4 rounded-sm py-1.5 items-center px-2 gap-2 text-xs outline-none hover:bg-grey-800 min-w-0 w-full text-grey-100"
               onClick={onEntrySelect?.bind(null, entry)}
               key={`last-entries-select-${entry.id}`}
             >

@@ -8,6 +8,7 @@ import { DropdownMenu } from '@components/dropdown-menu'
 import { IconButton } from '@components/icon-button'
 import { Input } from '@components/input'
 import { LastEntriesSelect } from '@components/last-entries-select'
+import { OpenedClickupTaskTabSelect, TOpenedClickupTaskTab } from '@components/opened-clickup-task-tab-select'
 import { NO_PROJECT_VALUE, ProjectsSelect } from '@components/projects-select'
 import { NO_TAG_VALUE, TagsSelect } from '@components/tags-select'
 import { Tooltip } from '@components/tolltip'
@@ -27,7 +28,6 @@ export const CurrentEntryForm = () => {
   const { values } = useStorage()
   const { playEntry, stopEntry, deleteTimeEntry } = useClockifyEntryService()
   const navigate = useNavigate()
-  // const { data } = useCompletedEntriesList()
 
   const { actionData, setDataItemWrapper, setData, setDataFromEventWrapper, reset } = useActions<TFormData>({
     description: '',
@@ -74,6 +74,13 @@ export const CurrentEntryForm = () => {
     })
   }
 
+  const handleFillFromClickupTask = (value: TOpenedClickupTaskTab) => {
+    setData({
+      description: value.description,
+      projectId: value.project?.id,
+    })
+  }
+
   useEffect(() => {
     if (!values.runningEntry) return
 
@@ -87,9 +94,7 @@ export const CurrentEntryForm = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-2">
-        <p className="font-bold text-sm text-grey-500 uppercase ">
-          {values.runningEntry ? 'RUNNING ENTRY' : 'START A NEW ENTRY'}
-        </p>
+        <p className="font-bold text-sm text-grey-500 uppercase ">NEW ENTRY</p>
 
         {values.runningEntry ? (
           <div className="flex gap-2">
@@ -110,9 +115,15 @@ export const CurrentEntryForm = () => {
             </DropdownMenu.Root>
           </div>
         ) : (
-          <Tooltip content="Add manual" align="end">
-            <IconButton icon={<IconClockPlus />} colorScheme="gray" size="lg" onClick={handleAddManual} />
-          </Tooltip>
+          <div className="flex flex-grow justify-between ml-2">
+            <div>
+              <OpenedClickupTaskTabSelect onEntrySelect={handleFillFromClickupTask} />
+            </div>
+
+            <Tooltip content="Add manual" align="end">
+              <IconButton icon={<IconClockPlus />} colorScheme="gray" size="lg" onClick={handleAddManual} />
+            </Tooltip>
+          </div>
         )}
       </div>
 

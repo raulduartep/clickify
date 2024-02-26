@@ -70,14 +70,14 @@ export const ClickupInjectTimeButton = ({ version }: TProps) => {
     const project = ClickupHelper.getCurrentProject(values.projects, version)
     const description = ClickupHelper.getCurrentTimeEntryDescription(version)
 
-    chrome.runtime.sendMessage({ type: 'openPopup', payload: { projectId: project?.id, description } })
+    chrome.runtime.sendMessage({ type: 'OPEN_POPUP', payload: { projectId: project?.id, description } })
   }
 
   const handleEdit = () => {
     if (!values.runningEntry) throw new Error('Running entry not found')
     if (!chrome.runtime)
       throw new Error('Chrome is not defined. You need to run this as a Chrome extension to use this feature.')
-    chrome.runtime.sendMessage({ type: 'openPopup', payload: { entry: JSON.stringify(values.runningEntry) } })
+    chrome.runtime.sendMessage({ type: 'OPEN_POPUP', payload: { entry: JSON.stringify(values.runningEntry) } })
   }
 
   return (
