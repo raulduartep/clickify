@@ -152,7 +152,7 @@ export const useClockifyEntryService = () => {
         }
       }
 
-      queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY, undefined], updater)
+      queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY], updater)
 
       const taskId = ClickupHelper.getClickupIdFromText(editedEntry.description)
       if (taskId) queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY, taskId], updater)
@@ -192,7 +192,7 @@ export const useClockifyEntryService = () => {
         }
       }
 
-      queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY, undefined], updater)
+      queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY], updater)
 
       const taskId = ClickupHelper.getClickupIdFromText(createdEntry.description)
       if (taskId) queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY, taskId], updater)

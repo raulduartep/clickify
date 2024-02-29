@@ -163,10 +163,6 @@ export const PopupEditPage = () => {
     isRunning
   )
 
-  console.log({
-    actionData,
-  })
-
   return (
     <Fragment>
       <PopupHeader withBackButton={true} />
