@@ -49,8 +49,9 @@ export const Input = forwardRef<HTMLInputElement, TInputProps>(
               },
               className
             ),
-            ...props,
             readOnly,
+            autoComplete: 'off',
+            ...props,
           })}
         </div>
 
