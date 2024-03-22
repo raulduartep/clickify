@@ -12,7 +12,6 @@ export const StorageProvider = ({ children }: TStorageProviderProps) => {
     apiKey: undefined,
     projects: undefined,
     user: undefined,
-    runningEntry: undefined,
     isFirstTime: undefined,
   })
 
@@ -43,11 +42,11 @@ export const StorageProvider = ({ children }: TStorageProviderProps) => {
   }, [])
 
   const getStorage = useCallback((): Promise<TStorageContextValues> => {
-    return StorageHelper.get(['apiKey', 'user', 'projects', 'tags', 'runningEntry', 'isFirstTime'])
+    return StorageHelper.get(['apiKey', 'user', 'projects', 'tags', 'isFirstTime'])
   }, [])
 
   useEffect(() => {
-    StorageHelper.get(['apiKey', 'user', 'projects', 'tags', 'runningEntry', 'isFirstTime']).then(storage => {
+    StorageHelper.get(['apiKey', 'user', 'projects', 'tags', 'isFirstTime']).then(storage => {
       setValues(prev => ({
         ...prev,
         ...storage,

@@ -20,7 +20,7 @@ export const MainPopupLayout = ({ children }: TProps) => {
     >
       <div
         className={StyleHelper.mergeStyles(
-          'min-w-[25rem] min-h-[37.5rem] max-w-[25rem] max-h-[37.5rem] bg-grey-800 py-5 flex flex-col',
+          'min-w-[25rem] min-h-[37.5rem] max-w-[25rem] max-h-[37.5rem] bg-grey-800  flex flex-col',
           { 'rounded-lg': fromInjection || EnvHelper.DEV }
         )}
       >

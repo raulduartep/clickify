@@ -6,7 +6,6 @@ import { PrivatePopupLayout } from 'src/layouts/PrivatePopupLayout'
 
 import { StorageProvider } from '@contexts/storage'
 
-import { PopupEditPage } from './routes/edit'
 import { PopupHomePage } from './routes/home'
 import { PopupUpdateApiPage } from './routes/update-api'
 import { PopupWelcomePage } from './routes/welcome'
@@ -35,14 +34,6 @@ const router = createHashRouter([
     element: (
       <PrivatePopupLayout>
         <PopupUpdateApiPage />
-      </PrivatePopupLayout>
-    ),
-  },
-  {
-    path: '/edit',
-    element: (
-      <PrivatePopupLayout>
-        <PopupEditPage />
       </PrivatePopupLayout>
     ),
   },

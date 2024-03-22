@@ -25,14 +25,6 @@
       "js": [
         "src/clickup-content-script.tsx"
       ]
-    },
-    {
-      "matches": [
-        "https://app.clockify.me/*"
-      ],
-      "js": [
-        "src/clockify-content-script.tsx"
-      ]
     }
   ],
   "permissions": [

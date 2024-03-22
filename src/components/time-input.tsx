@@ -5,7 +5,7 @@ import { DateHelper } from '@helpers/date'
 import { StyleHelper } from '@helpers/style'
 
 type TProps = Omit<TInputProps, 'value' | 'min'> & {
-  onValueChange: (value: Date) => void
+  onValueChange?: (value: Date) => void
   min?: Date
   value: Date
   date: Date
@@ -46,7 +46,7 @@ export const TimeInput = ({ onValueChange, value, className, min, date, ...props
     if (!blurValue) {
       const stringBlurValue = value?.toString() ?? ''
       setInputValue(stringBlurValue)
-      onValueChange(DateHelper.editDateTime(date, stringBlurValue))
+      onValueChange?.(DateHelper.editDateTime(date, stringBlurValue))
       return
     }
 
@@ -67,7 +67,7 @@ export const TimeInput = ({ onValueChange, value, className, min, date, ...props
 
     hoursComplete = handleMin(hoursComplete)
 
-    onValueChange(DateHelper.editDateTime(date, hoursComplete))
+    onValueChange?.(DateHelper.editDateTime(date, hoursComplete))
     setInputValue(hoursComplete)
   }
 

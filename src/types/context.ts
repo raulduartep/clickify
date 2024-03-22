@@ -1,9 +1,8 @@
 import { ReactNode } from 'react'
-import { TClockifyProject, TClockifyTag, TClockifyTimeEntry, TClockifyUser } from 'src/schemas/clockify'
+import { TClockifyProject, TClockifyTag, TClockifyUser } from 'src/schemas/clockify'
 
 export type TStorageContextValues = {
   tags?: TClockifyTag[]
-  runningEntry?: TClockifyTimeEntry
   apiKey?: string
   user?: TClockifyUser
   projects?: TClockifyProject[]

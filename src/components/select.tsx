@@ -17,7 +17,7 @@ const Trigger = forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={StyleHelper.mergeStyles(
-      'flex h-7 gap-2 min-w-0 text-left items-center justify-between rounded border border-grey-600 bg-transparent px-3 py-2 text-sm shadow-sm data-[placeholder]:text-grey-500 focus:outline-none  disabled:cursor-not-allowed disabled:opacity-50 [&>span]:truncate',
+      'flex h-5 gap-1 min-w-0 text-left items-center justify-between rounded-sm border border-grey-500/30 bg-transparent data-[state=open]:border-brand px-1.5 text-xs data-[placeholder]:text-grey-500 focus:outline-none  disabled:cursor-not-allowed disabled:opacity-50 [&>span]:truncate',
       className
     )}
     {...props}
@@ -38,7 +38,7 @@ const ScrollUpButton = forwardRef<
     className={StyleHelper.mergeStyles('flex cursor-default items-center justify-center py-1', className)}
     {...props}
   >
-    <IconChevronUp className="min-h-[1rem] min-w-[1rem] h-[1rem] w-[1rem]" />
+    <IconChevronUp className="min-h-[0.75rem] min-w-[0.75rem] h-[0.75rem] w-[0.75rem]" />
   </SelectPrimitive.ScrollUpButton>
 ))
 
@@ -51,7 +51,7 @@ const ScrollDownButton = forwardRef<
     className={StyleHelper.mergeStyles('flex cursor-default items-center justify-center py-1', className)}
     {...props}
   >
-    <IconChevronDown className="min-h-[1rem] min-w-[1rem] h-[1rem] w-[1rem]" />
+    <IconChevronDown className="min-h-[0.75rem] min-w-[0.75rem] h-[0.75rem] w-[0.75rem]" />
   </SelectPrimitive.ScrollDownButton>
 ))
 
@@ -76,7 +76,7 @@ const Content = forwardRef<
         className={StyleHelper.mergeStyles(
           'p-1',
           position === 'popper' &&
-            'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]'
+            'h-[var(--radix-select-trigger-height)] w-full max-w-[var(--radix-select-trigger-width)] min-w-[var(--radix-select-trigger-width)]'
         )}
       >
         {children}
@@ -92,7 +92,7 @@ const Label = forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
-    className={StyleHelper.mergeStyles('px-2 py-1.5 text-sm font-semibold', className)}
+    className={StyleHelper.mergeStyles('px-1.5 py-1 text-xs font-semibold', className)}
     {...props}
   />
 ))
@@ -102,17 +102,15 @@ const Item = forwardRef<ElementRef<typeof SelectPrimitive.Item>, ComponentPropsW
     <SelectPrimitive.Item
       ref={ref}
       className={StyleHelper.mergeStyles(
-        'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 text-sm outline-none focus:bg-grey-800 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>span]:max-w-[calc(var(--radix-popper-anchor-width)-2.5rem)] [&>span]:truncate',
+        'relative flex justify-between w-full min-w-0 gap-1 cursor-default select-none items-center rounded-sm py-0.5 px-1 text-xs outline-none focus:bg-grey-800 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>span]:truncate',
         className
       )}
       {...props}
     >
-      <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
-        <SelectPrimitive.ItemIndicator>
-          <IconCheck className="min-h-[0.75rem] min-w-[0.75rem] h-[0.75rem] w-[0.75rem]" />
-        </SelectPrimitive.ItemIndicator>
-      </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      <SelectPrimitive.ItemIndicator>
+        <IconCheck className="min-h-[0.75rem] min-w-[0.75rem] max-h-[0.75rem] max-w-[0.75rem]" />
+      </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   )
 )

@@ -1,11 +1,5 @@
 import { TClockifyTimeEntry } from 'src/schemas/clockify'
 
-export type TStartEntryParams = {
-  tagId?: string
-  projectId?: string
-  description?: string
-}
-
 export type TEditEntryParams = {
   id: string
   end?: Date
@@ -18,7 +12,7 @@ export type TEditEntryParams = {
 export type TAddTimeEntryParams = {
   description: string
   start: Date
-  end: Date
+  end?: Date
   projectId?: string
   tagId?: string
 }
@@ -26,7 +20,6 @@ export type TAddTimeEntryParams = {
 export type TGetTimeEntriesParams = {
   description?: string
   page?: number
-  inProgress?: boolean
 }
 
 export type TGetTimeEntriesResponse = {

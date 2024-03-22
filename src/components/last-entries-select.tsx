@@ -2,17 +2,18 @@ import { cloneElement, useMemo, useState } from 'react'
 import { TClockifyTimeEntry } from 'src/schemas/clockify'
 
 import { Popover } from '@components/popover'
-import { useCompletedEntriesList } from '@hooks/use-completed-entries-list'
+import { useEntriesList } from '@hooks/use-entries-list'
 import { useStorage } from '@hooks/use-storage'
 
 type TProps = {
   onEntrySelect?: (entry: TClockifyTimeEntry) => void
   value: string
   children: JSX.Element
+  disabled?: boolean
 }
 
-export const LastEntriesSelect = ({ onEntrySelect, children, value }: TProps) => {
-  const { data } = useCompletedEntriesList()
+export const LastEntriesSelect = ({ onEntrySelect, children, value, disabled }: TProps) => {
+  const { data } = useEntriesList()
   const { values } = useStorage()
 
   const [popoverIsOpen, setPopoverIsOpen] = useState(false)
@@ -30,6 +31,8 @@ export const LastEntriesSelect = ({ onEntrySelect, children, value }: TProps) =>
   }, [data, value])
 
   const handleFocus = () => {
+    if (disabled) return
+
     setPopoverIsOpen(true)
   }
 
@@ -47,7 +50,7 @@ export const LastEntriesSelect = ({ onEntrySelect, children, value }: TProps) =>
 
       <Popover.Content
         onOpenAutoFocus={handleOpenAutoFocus}
-        className="w-[22rem] p-1 max-h-[10rem] overflow-auto rounded"
+        className="w-[23rem] p-1 max-h-[10rem] overflow-auto rounded"
         align="start"
       >
         {filteredEntries.map(entry => {
@@ -56,15 +59,13 @@ export const LastEntriesSelect = ({ onEntrySelect, children, value }: TProps) =>
 
           return (
             <button
-              className="grid grid-cols-4 rounded-sm py-1.5 items-center px-2 gap-2 text-xs outline-none hover:bg-grey-800 min-w-0 w-full text-grey-100"
+              className="grid grid-cols-4 rounded-sm h-5 items-center px-2 gap-2 text-2xs outline-none hover:bg-grey-800 min-w-0 w-full text-grey-100"
               onClick={onEntrySelect?.bind(null, entry)}
               key={`last-entries-select-${entry.id}`}
             >
-              <p className="truncate col-span-2 min-w-0 text-left">{entry.description}</p>
-              {project && (
-                <p className="truncate text-center font-medium bg-brand/75 py-0.5 px-1 rounded">{project.name}</p>
-              )}
-              {tag && <p className="truncate text-center font-medium bg-orange/75 py-0.5 px-1 rounded">{tag.name}</p>}
+              <p className="truncate col-span-2 min-w-0 text-xs text-left">{entry.description}</p>
+              {project && <p className="truncate text-center font-medium p-0.5 bg-brand/75 rounded">{project.name}</p>}
+              {tag && <p className="truncate text-center font-medium bg-orange/75 p-0.5 rounded">{tag.name}</p>}
             </button>
           )
         })}

@@ -2,32 +2,32 @@ import { useCallback, useEffect, useRef } from 'react'
 import { InfiniteData, useQueryClient } from '@tanstack/react-query'
 import { clockifyTimeEntrySchema, TClockifyTimeEntry } from 'src/schemas/clockify'
 
+import { NO_PROJECT_VALUE } from '@components/projects-select'
+import { NO_TAG_VALUE } from '@components/tags-select'
 import { ClickupHelper } from '@helpers/clickup'
 import {
   TAddTimeEntryParams,
   TEditEntryParams,
   TGetTimeEntriesParams,
   TGetTimeEntriesResponse,
-  TStartEntryParams,
 } from '@interfaces/use-clockify'
 import { createClockifyAxios } from '@services/clockify'
 
-import { USE_COMPLETED_ENTRIES_LIST_QUERY_KEY } from './use-completed-entries-list'
+import { USE_ENTRIES_LIST_QUERY_KEY } from './use-entries-list'
 import { useStorage } from './use-storage'
 
 export const useClockifyEntryService = () => {
-  const { values, setStorage, removeStorage } = useStorage()
+  const { values } = useStorage()
   const queryClient = useQueryClient()
 
   const clockifyAxiosRef = useRef(createClockifyAxios())
 
   const getEntries = useCallback(
-    async ({ description, inProgress, page }: TGetTimeEntriesParams): Promise<TGetTimeEntriesResponse> => {
+    async ({ description, page }: TGetTimeEntriesParams): Promise<TGetTimeEntriesResponse> => {
       const { data } = await clockifyAxiosRef.current.get(`user/${values.user?.id}/time-entries`, {
         params: {
           page,
           description,
-          'in-progress': inProgress,
         },
       })
 
@@ -41,69 +41,42 @@ export const useClockifyEntryService = () => {
     [values.user]
   )
 
-  const playEntry = useCallback(
-    async ({ description, projectId, tagId }: TStartEntryParams) => {
-      const start = new Date().toISOString()
-
-      const { data } = await clockifyAxiosRef.current.post('time-entries', {
-        start,
-        description,
-        projectId,
-        tagIds: tagId ? [tagId] : undefined,
-      })
-
-      const parsedData = clockifyTimeEntrySchema.parse(data)
-      await setStorage({ runningEntry: parsedData })
-
-      return parsedData
-    },
-    [setStorage]
-  )
-
   const stopEntry = useCallback(async () => {
-    try {
-      const end = new Date().toISOString()
-      const { data } = await clockifyAxiosRef.current.patch(`user/${values.user?.id}/time-entries`, {
-        end,
-      })
+    const end = new Date().toISOString()
+    const { data } = await clockifyAxiosRef.current.patch(`user/${values.user?.id}/time-entries`, {
+      end,
+    })
 
-      const stoppedTimeEntry = clockifyTimeEntrySchema.parse(data)
+    const stoppedTimeEntry = clockifyTimeEntrySchema.parse(data)
 
-      const updater = (data: InfiniteData<TGetTimeEntriesResponse, unknown> | undefined) => {
-        if (!data) return
+    const updater = (data: InfiniteData<TGetTimeEntriesResponse, unknown> | undefined) => {
+      if (!data) return
 
-        return {
-          ...data,
-          pages: [
-            {
-              ...data.pages[0],
-              data: [stoppedTimeEntry, ...data.pages[0].data],
-            },
-            ...data.pages.slice(1),
-          ],
-        }
+      return {
+        ...data,
+        pages: [
+          {
+            ...data.pages[0],
+            data: [stoppedTimeEntry, ...data.pages[0].data],
+          },
+          ...data.pages.slice(1),
+        ],
       }
-
-      queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY], updater)
-
-      const taskId = ClickupHelper.getClickupIdFromText(stoppedTimeEntry.description)
-      if (taskId) queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY, taskId], updater)
-
-      return stoppedTimeEntry
-    } finally {
-      removeStorage('runningEntry')
     }
-  }, [values.user, removeStorage, queryClient])
+
+    queryClient.setQueryData([USE_ENTRIES_LIST_QUERY_KEY], updater)
+
+    const taskId = ClickupHelper.getClickupIdFromText(stoppedTimeEntry.description)
+    if (taskId) queryClient.setQueryData([USE_ENTRIES_LIST_QUERY_KEY, taskId], updater)
+
+    return stoppedTimeEntry
+  }, [values.user, queryClient])
 
   const deleteTimeEntry = useCallback(
     async (entry: TClockifyTimeEntry) => {
       try {
         await clockifyAxiosRef.current.delete(`time-entries/${entry.id}`)
       } finally {
-        if (values.runningEntry?.id === entry.id) {
-          removeStorage('runningEntry')
-        }
-
         const updater = (data: InfiniteData<TGetTimeEntriesResponse, unknown> | undefined) => {
           if (!data) return
 
@@ -116,19 +89,22 @@ export const useClockifyEntryService = () => {
           }
         }
 
-        queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY], updater)
+        queryClient.setQueryData([USE_ENTRIES_LIST_QUERY_KEY], updater)
 
         const taskId = ClickupHelper.getClickupIdFromText(entry.description)
-        queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY, taskId], updater)
+        queryClient.setQueryData([USE_ENTRIES_LIST_QUERY_KEY, taskId], updater)
       }
     },
-    [queryClient, removeStorage, values.runningEntry]
+    [queryClient]
   )
 
   const editTimeEntry = useCallback(
     async ({ description, end, id, start, projectId, tagId }: TEditEntryParams) => {
-      const utcStart = start.toISOString()
+      const utcStart = start?.toISOString()
       const utcEnd = end?.toISOString()
+
+      projectId = projectId === NO_PROJECT_VALUE ? undefined : projectId
+      tagId = tagId === NO_TAG_VALUE ? undefined : tagId
 
       const { data } = await clockifyAxiosRef.current.put(`time-entries/${id}`, {
         end: utcEnd,
@@ -152,20 +128,23 @@ export const useClockifyEntryService = () => {
         }
       }
 
-      queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY], updater)
+      queryClient.setQueryData([USE_ENTRIES_LIST_QUERY_KEY], updater)
 
       const taskId = ClickupHelper.getClickupIdFromText(editedEntry.description)
-      if (taskId) queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY, taskId], updater)
+      if (taskId) queryClient.setQueryData([USE_ENTRIES_LIST_QUERY_KEY, taskId], updater)
 
       return editedEntry
     },
     [queryClient]
   )
 
-  const addTimeEntry = useCallback(
+  const createTimeEntry = useCallback(
     async ({ description, end, start, projectId, tagId }: TAddTimeEntryParams) => {
       const utcStart = start.toISOString()
-      const utcEnd = end.toISOString()
+      const utcEnd = end?.toISOString()
+
+      projectId = projectId === NO_PROJECT_VALUE ? undefined : projectId
+      tagId = tagId === NO_TAG_VALUE ? undefined : tagId
 
       const { data } = await clockifyAxiosRef.current.post('time-entries', {
         start: utcStart,
@@ -192,10 +171,10 @@ export const useClockifyEntryService = () => {
         }
       }
 
-      queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY], updater)
+      queryClient.setQueryData([USE_ENTRIES_LIST_QUERY_KEY], updater)
 
       const taskId = ClickupHelper.getClickupIdFromText(createdEntry.description)
-      if (taskId) queryClient.setQueryData([USE_COMPLETED_ENTRIES_LIST_QUERY_KEY, taskId], updater)
+      if (taskId) queryClient.setQueryData([USE_ENTRIES_LIST_QUERY_KEY, taskId], updater)
 
       return createdEntry
     },
@@ -207,11 +186,10 @@ export const useClockifyEntryService = () => {
   }, [values.apiKey, values.user])
 
   return {
-    playEntry,
-    stopEntry,
     deleteTimeEntry,
     editTimeEntry,
-    addTimeEntry,
+    createTimeEntry,
     getEntries,
+    stopEntry,
   }
 }

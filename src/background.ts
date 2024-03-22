@@ -4,7 +4,7 @@ async function openPopup(message: any) {
     height: 600,
     width: 400,
     type: 'popup',
-    url: `index.html/#/edit?${new URLSearchParams({ ...message.payload, fromInjection: true }).toString()}`,
+    url: `index.html/#?${new URLSearchParams({ ...message.payload, fromInjection: true }).toString()}`,
   })
 
   chrome.windows.onFocusChanged.addListener(async () => {

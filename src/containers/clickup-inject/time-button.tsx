@@ -1,12 +1,14 @@
-import { useMemo } from 'react'
-import { IconPencil, IconPlayerPlay, IconPlayerStopFilled, IconPlus, IconTag } from '@tabler/icons-react'
+import { Fragment, useMemo } from 'react'
+import { IconPlayerPlay, IconPlayerStopFilled, IconPlus, IconTag } from '@tabler/icons-react'
 import { TClockifyTag } from 'src/schemas/clockify'
 
 import { DropdownMenu } from '@components/dropdown-menu'
 import { IconButton } from '@components/icon-button'
+import { Loader } from '@components/loader'
 import { ClickupHelper } from '@helpers/clickup'
-import { StyleHelper } from '@helpers/style'
+import { DateHelper } from '@helpers/date'
 import { useClockifyEntryService } from '@hooks/use-clockify-entry-service'
+import { useEntriesList } from '@hooks/use-entries-list'
 import { useEntryCountUp } from '@hooks/use-entry-countup'
 import { useStorage } from '@hooks/use-storage'
 import { TClickupVersion } from '@interfaces/clickup'
@@ -20,25 +22,38 @@ type TProps = {
 
 export const ClickupInjectTimeButton = ({ version }: TProps) => {
   const { values } = useStorage()
-  const { playEntry, stopEntry } = useClockifyEntryService()
-
-  const runningSeconds = useEntryCountUp(values.runningEntry?.timeInterval?.start)
+  const { createTimeEntry, stopEntry } = useClockifyEntryService()
 
   const currentTaskId = useMemo(() => ClickupHelper.getCurrentTaskId(), [])
 
-  const isRunning = useMemo(() => {
-    if (!values.runningEntry) {
-      return false
+  const query = useEntriesList(currentTaskId)
+
+  const inProgressEntry = useMemo(() => {
+    if (!query.data) return
+    const firstEntry = query.data.pages[0].data[0]
+
+    if (firstEntry?.timeInterval.end) return
+
+    return firstEntry
+  }, [query.data])
+
+  const completedDuration = useMemo(() => {
+    let total = 0
+
+    if (query.data) {
+      total = query.data.pages[0].data.reduce((acc, entry) => {
+        if (!entry.timeInterval.end) return acc
+
+        const duration = DateHelper.durationInSeconds(entry.timeInterval.end as string, entry.timeInterval.start)
+
+        return acc + duration
+      }, 0)
     }
 
-    const idFromText = ClickupHelper.getClickupIdFromText(values.runningEntry.description)
+    return total
+  }, [query.data])
 
-    if (!idFromText || idFromText !== currentTaskId) {
-      return false
-    }
-
-    return true
-  }, [values.runningEntry, currentTaskId])
+  const runningSeconds = useEntryCountUp(inProgressEntry?.timeInterval.start)
 
   const handlePlay = async (tag?: TClockifyTag) => {
     if (!values.projects) throw new Error('Projects not found')
@@ -46,20 +61,21 @@ export const ClickupInjectTimeButton = ({ version }: TProps) => {
     const project = ClickupHelper.getCurrentProject(values.projects, version)
     const description = ClickupHelper.getCurrentTimeEntryDescription(version)
 
-    await playEntry({
+    await createTimeEntry({
       tagId: tag?.id,
       projectId: project?.id,
       description,
+      start: new Date(),
     })
   }
 
-  const handleClick = () => {
-    if (isRunning) {
-      stopEntry()
+  const handleClick = async () => {
+    if (inProgressEntry) {
+      await stopEntry()
       return
     }
 
-    handlePlay()
+    await handlePlay()
   }
 
   const handleAddManual = () => {
@@ -73,53 +89,55 @@ export const ClickupInjectTimeButton = ({ version }: TProps) => {
     chrome.runtime.sendMessage({ type: 'OPEN_POPUP', payload: { projectId: project?.id, description } })
   }
 
-  const handleEdit = () => {
-    if (!values.runningEntry) throw new Error('Running entry not found')
-    if (!chrome.runtime)
-      throw new Error('Chrome is not defined. You need to run this as a Chrome extension to use this feature.')
-    chrome.runtime.sendMessage({ type: 'OPEN_POPUP', payload: { entry: JSON.stringify(values.runningEntry) } })
-  }
-
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex items-center">
-        <ClickupInjectTimeButtonTotalDuration currentTaskId={currentTaskId} runningSeconds={runningSeconds} />
+      {query.isLoading ? (
+        <Loader className="text-brand" />
+      ) : (
+        <Fragment>
+          <div className="flex items-center">
+            <ClickupInjectTimeButtonTotalDuration duration={completedDuration + runningSeconds} />
+            <IconButton
+              disabled={!!inProgressEntry}
+              icon={<IconPlus />}
+              colorScheme="brand"
+              onClick={handleAddManual}
+            />
+          </div>
 
-        <IconButton disabled={isRunning} icon={<IconPlus />} onClick={handleAddManual} />
-        <IconButton disabled={!isRunning} icon={<IconPencil />} onClick={handleEdit} />
-      </div>
+          <div className="flex items-center gap-1">
+            <div className="flex items-center gap-[0.125rem]">
+              <IconButton
+                onClick={handleClick}
+                colorScheme={inProgressEntry ? 'red' : 'brand'}
+                icon={!inProgressEntry ? <IconPlayerPlay /> : <IconPlayerStopFilled />}
+              />
 
-      <div className="flex items-center gap-1">
-        <div className="flex items-center gap-[0.125rem]">
-          <IconButton
-            className={StyleHelper.mergeStyles({
-              'text-red-500 aria-[disabled=false]:hover:bg-red-500/20': isRunning,
-            })}
-            onClick={handleClick}
-            icon={!isRunning ? <IconPlayerPlay /> : <IconPlayerStopFilled />}
-          />
+              {!inProgressEntry && (
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger asChild>
+                    <IconButton icon={<IconTag />} />
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    {values.tags &&
+                      values.tags.map(tag => (
+                        <DropdownMenu.Item
+                          key={tag.id}
+                          className="justify-center text-2xs"
+                          onClick={handlePlay.bind(null, tag)}
+                        >
+                          {tag.name}
+                        </DropdownMenu.Item>
+                      ))}
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
+              )}
+            </div>
 
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger asChild>
-              <IconButton disabled={isRunning} icon={<IconTag />} />
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Content>
-              {values.tags &&
-                values.tags.map(tag => (
-                  <DropdownMenu.Item
-                    key={tag.id}
-                    className="justify-center text-2xs"
-                    onClick={handlePlay.bind(null, tag)}
-                  >
-                    {tag.name}
-                  </DropdownMenu.Item>
-                ))}
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-        </div>
-
-        <ClickupInjectTimeButtonCountUp isRunning={isRunning} runningSeconds={runningSeconds} />
-      </div>
+            <ClickupInjectTimeButtonCountUp isRunning={!!inProgressEntry} runningSeconds={runningSeconds} />
+          </div>
+        </Fragment>
+      )}
     </div>
   )
 }
